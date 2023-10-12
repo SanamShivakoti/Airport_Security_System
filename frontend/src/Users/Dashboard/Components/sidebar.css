@@ -1,0 +1,130 @@
+.content {
+  width: 250px;
+  height: 100vh;
+  background-color: rgb(57, 75, 88);
+  margin-left: 1px;
+  float: left;
+}
+
+#main-title {
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+  margin-left: 10px;
+  padding-top: 10px;
+}
+
+#User-role-title {
+  font-size: 15px;
+  color: white;
+  font-weight: bold;
+  padding-top: 10px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+#profile-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin-right: 70px;
+  margin-left: 76px;
+  padding-left: 0px;
+  margin-top: 14px;
+  border: 1px solid aliceblue;
+}
+
+#ProfileName {
+  font-size: 15px;
+  color: white;
+  font-weight: italic;
+  padding-top: 10px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.profile {
+  margin-bottom: 20px;
+}
+
+.profile:hover {
+  cursor: pointer;
+  background-color: #293846;
+}
+.SidebarList {
+  height: auto;
+  width: 100%;
+  padding-top: 8px;
+  margin: 0px;
+  padding-left: 6px;
+}
+
+.SidebarList .row {
+  height: 100%;
+  width: 97%;
+  /* border: 1px solid black; */
+  list-style-type: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.SidebarList .row:hover {
+  cursor: pointer;
+  background-color: #293846;
+}
+
+
+.row #icon {
+  flex: 30%;
+  display: grid;
+  place-items: center;
+}
+
+.row #titlename {
+  flex: 70%;
+}
+
+li.row.active {
+  background-color: #f4f4f5;
+  color: black;
+}
+/* media query */
+
+/* @media only screen and (max-width: 1440px) {
+    .main-content {
+      width: 250px;
+      height: 100vh;
+      background-color: rgb(57, 75, 88);
+      position: relative;
+      right: 595px;
+    }
+  }
+  
+  @media only screen and (max-width: 1280px) {
+    .main-content {
+      width: 250px;
+      height: 100vh;
+      background-color: rgb(57, 75, 88);
+      position: relative;
+      right: 514px;
+    }
+  }
+  
+  @media only screen and (max-width: 1080px) {
+    .main-content {
+      width: 250px;
+      height: 100vh;
+      background-color: rgb(57, 75, 88);
+      position: relative;
+      right: 414px;
+    }
+  } */
