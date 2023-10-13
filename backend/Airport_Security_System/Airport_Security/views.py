@@ -2,17 +2,36 @@ from rest_framework import viewsets, serializers
 from .models import Role, Admin, User
 from .serializers import RoleSerializer, AdminSerializer, UserSerializer
 from .utils import generate_user_id
+from rest_framework.response import Response
+from rest_framework import status
 
+import json
 # Create a RoleViewSet
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
+    
+    def create(self, request, *args, **kwargs):
+        role_data = {
+            "role_id": request.data.get("role_id"),
+            "role_name": request.data.get("role_name")
+        }
+        role_serializer = self.get_serializer(data=role_data)
+        if role_serializer.is_valid():
+            role = role_serializer.save()
+            role.save()
+            
+            return Response(role_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(role_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+        
 
 # Create an AdminViewSet
 class AdminViewSet(viewsets.ModelViewSet):
     queryset = Admin.objects.all()
     serializer_class = AdminSerializer
-    
     
     def validate(self, data):
         user_id = data.get('user_id')
@@ -39,39 +58,29 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
       
-    
-    def create(self, validated_data):
-        # Get the role_name from the form data
-            role_name = validated_data.get('role_name')
-        
-        # Look up the Role object based on role_name or create if it doesn't exist
-            role, created = Role.objects.get_or_create(role_name=role_name)
-        
-        # Generate a unique User_id
-            user_id = generate_user_id()
-        
-        # Assign the Role object to the User instance
-            validated_data['role'] = role
-        
-        # Create the User instance with User_id and the assigned Role
-            user = User.objects.create(user_id=user_id, **validated_data)
-            return user
+
         
         
-    def update(self, instance, validated_data):
-        # Get the role_name from the form data
-            role_name = validated_data.get('role_name')
+    # def update(self, request, pk=None):  # Include 'request' as the first argument
         
-        # Look up the Role object based on role_name or create if it doesn't exist
-            role, created = Role.objects.get_or_create(role_name=role_name)
+    #     try:
+    #         user = User.objects.get(user_id=pk)
+    #     except User.DoesNotExist:
+    #         return Response({"detail":"User not found"}, status=status.HTTP_404_NOT_FOUND)
         
-        # Update the Role field in the User instance
-            instance.role = role
+    #     print(request.data.get('role_id'))
+    #     role_id = request.data.get('role_id')
         
-        # Update other fields if needed
-            for attr, value in validated_data.items():
-                setattr(instance, attr, value)
         
-        # Save the updated User instance
-            instance.save()
-            return instance
+    #     for attr, value in request.data.items():
+    #         setattr(user, attr, value)
+            
+            
+    #     user.save()
+        
+    #     serializer = UserSerializer(user)
+    #     return Response(serializer.data)
+
+
+
+

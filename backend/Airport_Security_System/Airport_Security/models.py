@@ -11,11 +11,17 @@ class Role(models.Model):
         (USER, 'User'),
     ]
 
-    role_id = models.CharField(max_length=5, primary_key=True, default=generate_role_id, unique=True)
+    role_id = models.CharField(max_length=5, primary_key=True, unique=True)
     role_name = models.CharField(max_length=5, choices=ROLE_CHOICES, default=USER)
+    
+    def save(self, *args, **kwargs):
+        if not self.role_id:
+            # Generate a unique role_id if it's not provided
+            self.role_id = generate_role_id()
+        super(User, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.role_name
+        return self.role_id
 
 class Admin(models.Model):
     
@@ -55,7 +61,7 @@ class User(models.Model):
         regex=r'^\d{10}$',  # Modify the pattern to match your requirements
         message='Mobile number must be 10 digits long.'
     )
-    user_id = models.CharField(max_length=5, primary_key=True, default=generate_user_id, unique=True)
+    user_id = models.CharField(max_length=5, primary_key=True, unique=True)
     first_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50)
@@ -70,11 +76,23 @@ class User(models.Model):
     created_date = models.DateField(auto_now_add=True)
     created_time = models.TimeField(auto_now_add=True)
     
-    def __str__(self):
-        return f'{self.first_name} {self.middle_name} {self.last_name}'
-    
-       # Override the save method to hash the password before saving
+           # Override the save method to hash the password before saving
     def save(self, *args, **kwargs):
         # Hash the password using make_password before saving
         self.password = make_password(self.password)
         super(User, self).save(*args, **kwargs)
+        
+    def save(self, *args, **kwargs):
+        if not self.user_id:
+            # Generate a unique user_id if it's not provided
+            self.user_id = generate_user_id()
+        super(User, self).save(*args, **kwargs)
+        
+    def __str__(self):
+        return self.user_id
+    
+
+        
+        
+
+        
