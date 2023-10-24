@@ -11,19 +11,19 @@ class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all()
     serializer_class = RoleSerializer
     
-    def create(self, request, *args, **kwargs):
-        role_data = {
-            "role_id": request.data.get("role_id"),
-            "role_name": request.data.get("role_name")
-        }
-        role_serializer = self.get_serializer(data=role_data)
-        if role_serializer.is_valid():
-            role = role_serializer.save()
-            role.save()
+    # def create(self, request, *args, **kwargs):
+    #     role_data = {
+    #         "role_id": request.data.get("role_id"),
+    #         "role_name": request.data.get("role_name")
+    #     }
+    #     role_serializer = self.get_serializer(data=role_data)
+    #     if role_serializer.is_valid():
+    #         role = role_serializer.save()
+    #         role.save()
             
-            return Response(role_serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(role_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #         return Response(role_serializer.data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response(role_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
             
         
