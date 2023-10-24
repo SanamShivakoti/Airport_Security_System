@@ -14,11 +14,11 @@ class Role(models.Model):
     role_id = models.CharField(max_length=5, primary_key=True, unique=True)
     role_name = models.CharField(max_length=5, choices=ROLE_CHOICES, default=USER)
     
-    def save(self, *args, **kwargs):
-        if not self.role_id:
-            # Generate a unique role_id if it's not provided
-            self.role_id = generate_role_id()
-        super(User, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.role_id:
+    #         # Generate a unique role_id if it's not provided
+    #         self.role_id = generate_role_id()
+    #     super(User, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.role_id
