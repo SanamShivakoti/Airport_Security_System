@@ -97,34 +97,3 @@ li.row.active {
   color: black;
 }
 
-/* media query */
-
-/* @media only screen and (max-width: 1440px) {
-  .main-content {
-    width: 250px;
-    height: 100vh;
-    background-color: rgb(57, 75, 88);
-    position: relative;
-    right: 595px;
-  }
-}
-
-@media only screen and (max-width: 1280px) {
-  .main-content {
-    width: 250px;
-    height: 100vh;
-    background-color: rgb(57, 75, 88);
-    position: relative;
-    right: 514px;
-  }
-}
-
-@media only screen and (max-width: 1080px) {
-  .main-content {
-    width: 250px;
-    height: 100vh;
-    background-color: rgb(57, 75, 88);
-    position: relative;
-    right: 414px;
-  }
-} */
