@@ -4,6 +4,7 @@ import StaffsRegistration from "../../Staffs";
 import PassengersRegistration from "../../Passengers";
 import Settings from "../../Settings";
 import ViewUsers from "../../User/view_users";
+import ViewPassengers from "../../Passengers/view_passengers";
 import "./sidebar.css";
 import Content from "../Contents";
 import { SidebarData } from "./Sidebardata";
@@ -58,9 +59,11 @@ function Sidebar() {
           path="/Passenger/Registration"
           element={<PassengersRegistration />}
         />
+
+        <Route path="/Passenger/View/details"  element={<ViewPassengers />}/>
         {/**Admin Setting route */}
         <Route path="/Settings" element={<Settings />} />
-        <Route path="/View/Users" element={<ViewUsers />} />
+        <Route path="User/View/details" element={<ViewUsers />} />
       </Routes>
     </div>
   );
