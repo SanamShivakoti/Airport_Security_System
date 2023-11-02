@@ -2,6 +2,8 @@ import { Routes, Route } from "react-router-dom";
 import PassengerRegistration from "../../Passengers";
 import ViewPassengers from "../../View_passengers";
 import UserSettings from "../../Settings";
+import OtpVerification from "../../Settings/change_password";
+import NewPasswordForm from "../../Settings/change_password/set_new_password";
 import "./sidebar.css";
 import Content from "../Contents";
 import { sidebar_data } from "./sidebar_data";
@@ -56,6 +58,13 @@ function Usersidebar() {
 
         {/**User Setting Page route */}
         <Route path="/Settings" element={<UserSettings />} />
+
+        {/* User verify OTP for password change */}
+        <Route path="/Settings/verify/Otp" element={<OtpVerification />} />
+
+        {/* User set new password form */}
+        <Route path="/Settings/set/newpassword" element={<NewPasswordForm />} />
+        
       </Routes>
     </div>
   );
