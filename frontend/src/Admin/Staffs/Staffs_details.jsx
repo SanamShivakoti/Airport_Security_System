@@ -1,4 +1,9 @@
 function StaffsRegistration() {
+
+  // function to open camera
+  const openCamera = () => {
+
+  };
   return (
     <div>
       <div className="text-3xl font-bold text-center">Staffs Details</div>
@@ -139,13 +144,20 @@ function StaffsRegistration() {
             </div>
               {/* To display photo */}
               <div className="relative ">
-                <div className="absolute top-0 right-0 mt-4 px-4 bg-white w-60 h-60 mx-auto p-4 border-4 border-gray-300 rounded-md">
-                  <label
-                    htmlFor="photo"
-                    className="block ml-1 text-sm text-center font-medium leading-6 text-gray-900"
-                  >
-                    Photo
-                  </label>
+                <div className="absolute top-0 right-0">
+                    <div className=" mt-4 px-4 bg-white w-60 h-60 mx-auto p-4 border-4 border-gray-300 rounded-md">
+                      <label
+                        htmlFor="photo"
+                        className="block ml-1 text-sm text-center font-medium leading-6 text-gray-900"
+                      >
+                        Photo
+                      </label>
+                    </div>
+
+                    <button className="w-40 mt-4" onClick={openCamera}>
+                      Open Camera
+                    </button>
+                    
                 </div>
             </div>
           </div>
