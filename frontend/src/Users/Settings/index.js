@@ -1,3 +1,3 @@
-import UserSettings from "./Setting";
+import UserSettings from "./Settings";
 
 export default UserSettings;
