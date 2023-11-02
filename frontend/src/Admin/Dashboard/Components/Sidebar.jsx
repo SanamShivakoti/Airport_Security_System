@@ -6,6 +6,8 @@ import Settings from "../../Settings";
 import ViewUsers from "../../User/view_users";
 import ViewPassengers from "../../Passengers/view_passengers";
 import ViewStaffs from "../../Staffs/view_staffs";
+import OtpVerification from "../../Settings/Change_password";
+import NewPasswordForm from "../../Settings/Change_password/set_new_password";
 import "./sidebar.css";
 import Content from "../Contents";
 import { SidebarData } from "./Sidebardata";
@@ -56,6 +58,7 @@ function Sidebar() {
           element={<StaffsRegistration />}
         />
 
+        {/* for Admin Staffs view details */}
         <Route 
           path="/Staff/View/details"
           element={<ViewStaffs />}
@@ -66,9 +69,15 @@ function Sidebar() {
           element={<PassengersRegistration />}
         />
 
+        {/* for Admin Passengers view details */}
         <Route path="/Passenger/View/details"  element={<ViewPassengers />}/>
         {/**Admin Setting route */}
-        <Route path="/Settings" element={<Settings />} />
+        <Route path="/Settings/" element={<Settings />} />
+        {/* for Admin OTP verifaction */}
+        <Route path="/Settings/verify/Otp" element={<OtpVerification/>} />
+        {/* for Admin set new password */}
+        <Route path="/settings/set/newpassword" element={<NewPasswordForm />} />
+        {/* for Amdin User view details */}
         <Route path="/User/View/details" element={<ViewUsers />} />
       </Routes>
     </div>
