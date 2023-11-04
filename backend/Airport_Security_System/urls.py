@@ -19,18 +19,10 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from Airport_Security import views
 
-router_admin = DefaultRouter()
-router_admin.register(r'admins', views.AdminViewSet)
-
-router_role = DefaultRouter()
-router_role.register(r'roles', views.RoleViewSet)
-
 router_user = DefaultRouter()
 router_user.register(r'users', views.UserViewSet)
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    path('api/', include(router_admin.urls)),
-    path('api/', include(router_role.urls)),
     path('api/', include(router_user.urls)),
 ]
