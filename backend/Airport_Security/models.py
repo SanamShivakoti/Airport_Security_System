@@ -1,25 +1,37 @@
 from django.db import models
+from django.contrib.auth.models import BaseUserManager,AbstractBaseUser
 from .utils import generate_user_id
-from django.contrib.auth.hashers import make_password, check_password
 from django.core.validators import RegexValidator
 
-class User(models.Model):
+class UserManager(BaseUserManager):
+    def create_user(self, first_name, middle_name,  last_name, email, mobile_number, password=None, password2=None):
+        user = self.model(
+            email=self.normalize_email(email),
+            first_name=first_name,
+            middle_name=middle_name,
+            last_name=last_name,
+            mobile_number=mobile_number
+
+        )
+       
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+class User(AbstractBaseUser):
     ADMIN = 'Admin'
     USER = 'User'
     ROLE_CHOICES = [
         (ADMIN, 'Admin'),
         (USER, 'User'),
     ]
-    
-    # print(check_password('12345','pbkdf2_sha256$600000$QybzmztV2uz8oIKnFTymEX$ukCd53I0ON3Y+sUlootdctH6DE9UfJiVYiH3Pu/IEjk='))
-    
+
     # Define a regular expression pattern for mobile numbers
     mobile_regex = RegexValidator(
         regex=r'^\d{10}$',  # Modify the pattern to match your requirements
         message='Mobile number must be 10 digits long.'
     )
 
-  
     user_id = models.CharField(max_length=5, primary_key=True, unique=True, default=generate_user_id())
     first_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
@@ -29,19 +41,18 @@ class User(models.Model):
         blank=True, 
         validators=[mobile_regex], 
         )
-    password = models.CharField(max_length=128)  # You should hash and store passwords securely
+    password = models.CharField(max_length=128) 
     role = models.CharField(max_length=5, choices=ROLE_CHOICES, default=USER)
     status = models.CharField(max_length=8, choices=[('active', 'Active'), ('inactive', 'Inactive')], default='active')
     created_date = models.DateField(auto_now_add=True)
     created_time = models.TimeField(auto_now_add=True)
     
-    def save(self, *args, **kwargs):
+    
+    objects = UserManager()
 
-        # Hash the password using make_password before saving
-        self.password = make_password(self.password)
-        
-        super(User, self).save(*args, **kwargs)
-   
+    USERNAME_FIELD = 'user_id'
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'email','password','role','status']
+
         
     def __str__(self):
         return self.user_id
