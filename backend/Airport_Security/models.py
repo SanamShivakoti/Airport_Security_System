@@ -36,7 +36,11 @@ class User(AbstractBaseUser):
     first_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50)
-    email = models.EmailField()
+    email = models.EmailField(
+      verbose_name='Email',
+      max_length=255,
+      unique=True,
+    )
     mobile_number = models.CharField(max_length=15,
         blank=True, 
         validators=[mobile_regex], 
@@ -50,8 +54,8 @@ class User(AbstractBaseUser):
     
     objects = UserManager()
 
-    USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'email','password','role','status']
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['user_id','first_name', 'last_name','password','role','status']
 
         
     def __str__(self):
