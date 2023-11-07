@@ -46,6 +46,8 @@ class User(AbstractBaseUser):
         validators=[mobile_regex], 
         )
     password = models.CharField(max_length=128) 
+    otp = models.CharField(max_length=6, blank=True, null=True)
+    otp_timestamp = models.DateTimeField(null=True, blank=True)
     role = models.CharField(max_length=5, choices=ROLE_CHOICES, default=USER)
     status = models.CharField(max_length=8, choices=[('active', 'Active'), ('inactive', 'Inactive')], default='active')
     created_date = models.DateField(auto_now_add=True)
@@ -62,7 +64,7 @@ class User(AbstractBaseUser):
         return self.user_id
     
 
-        
+       
         
 
         
