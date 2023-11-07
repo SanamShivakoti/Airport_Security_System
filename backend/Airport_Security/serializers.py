@@ -39,3 +39,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
     fields = ['user_id', 'first_name','middle_name','last_name','mobile_number','role','email']
+
+
+class OTPVerificationSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6, required=True)
+
+class PasswordResetSerializer(serializers.Serializer):
+    password = serializers.CharField(style={'input_type': 'password'}, write_only=True, required=True)
+    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True, required=True)
+
