@@ -1,3 +1,5 @@
+from Airport_Security.check_roles import role_required
+from django.contrib.auth.decorators import permission_required
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -21,6 +23,8 @@ def get_tokens_for_user(user):
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
+
+    @role_required(['Admin']) 
     def post(self, request, format=None):
         serializer = UserRegistrationSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
