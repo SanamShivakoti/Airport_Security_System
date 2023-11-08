@@ -13,9 +13,9 @@ from rest_framework.permissions import IsAuthenticated
 from Airport_Security.utils import generate_otp, Util
 from django.utils import timezone
 from datetime import timedelta
-from Airport_Security.serializers import OTPVerificationSerializer, PasswordResetSerializer
+from Airport_Security.serializers import OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,UpdateUserSerializer, DeleteUserSerializer
 from django.urls import reverse
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -25,7 +25,7 @@ def get_tokens_for_user(user):
       'access': str(refresh.access_token),
   }
 
-# User Registration
+# User Registration View
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
@@ -44,8 +44,7 @@ class UserRegistrationView(APIView):
         return Response({'token':token,'msg' : 'Registration Successful'}, status=status.HTTP_201_CREATED)
 
       
-# login User
-
+# login User View
 class LoginUserView(APIView):
     renderer_classes =[UserRenderer]
     def post(self, request, format=None):
@@ -61,6 +60,7 @@ class LoginUserView(APIView):
             return Response({'errors':{'non_field_errors':['Email or Password is not valid']}}, status=status.HTTP_404_NOT_FOUND)
 
 
+# User Profile View of Logined Users
 class UserProfileView(APIView):
   renderer_classes = [UserRenderer]
   permission_classes = [IsAuthenticated]
@@ -69,7 +69,7 @@ class UserProfileView(APIView):
     return Response(serializer.data, status=status.HTTP_200_OK)
   
 
-
+# Send OTP View Via Email for Password Reset
 class SendOtpResetEmailView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
@@ -95,7 +95,7 @@ class SendOtpResetEmailView(APIView):
             return Response({'msg': 'OTP sent via email'}, status=status.HTTP_200_OK)
     
 
-
+# Verify OTP View
 class VerifyOtpView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
@@ -113,15 +113,15 @@ class VerifyOtpView(APIView):
                 user.otp_timestamp = None
                 user.save()
 
-                password_change_url = reverse('password_reset')
-                return HttpResponseRedirect(password_change_url)
+                
+                return Response({'msg':'OTP Verified'}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
+# Password Reset View after OTP Verified
 class OTPVerifiedPasswordResetView(APIView):
 
     def OTPVerifiedPasswordReset(request):
@@ -145,5 +145,52 @@ class OTPVerifiedPasswordResetView(APIView):
 
 
 
+# List of Users View to Read all Users    
+class UserView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    @role_required(['Admin']) 
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
 
+class UpdateUserView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    @role_required(['Admin'])
+    def put(self, request):
+        serializer = UpdateUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_id = serializer.data.get('user_id')
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'User updated successfully'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DeleteUserView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    @role_required(['Admin'])
+    def delete(self, request):
+        serializer = DeleteUserSerializer(data = request.data)
+        if serializer.is_valid(raise_exception=True):
+            user_id = serializer.data.get('user_id')
+            try:
+                user = User.objects.get(user_id=user_id)
+                user.delete()
+                return Response({'msg': 'User deleted successfully'}, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
