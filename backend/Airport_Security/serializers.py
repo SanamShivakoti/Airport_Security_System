@@ -48,3 +48,18 @@ class PasswordResetSerializer(serializers.Serializer):
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True, required=True)
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True, required=True)
 
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['user_id']
+
+class DeleteUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['user_id']
