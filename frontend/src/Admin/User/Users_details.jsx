@@ -1,9 +1,32 @@
+// import { useState } from "react";
+import { useRegisterUserMutation } from "../../services/userAuthApi";
 function UserRegistration() {
+  // const [server_error, setServerError] = useState()
+  const [registerUser] = useRegisterUserMutation()
+  const handleSubmit= async (e)=>{
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    const actualData = {
+      first_name: data.get('first_name'),
+      middle_name: data.get('middle_name'),
+      last_name: data.get('last_name'),
+      email: data.get('email'),
+      mobile_number: data.get('mobile_number'),
+      password: data.get('password'),
+      cpassword: data.get('cpassword'),
+      role: data.get('role')
+      
+    }
+
+      const res =  await registerUser(actualData)
+      console.log(res)
+  }
+
   return (
     <div>
       <div className="text-3xl flex justify-center font-bold">Users Details</div>
       <div className="mt-8 ">
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="grid w-auto grid-cols-2 gap-4 laptop:px-40 desktop:px-52  tablet:px-32">
             <div className="mt-4">
               <label
@@ -15,7 +38,7 @@ function UserRegistration() {
 
               <input
                 type="text"
-                name="first-name"
+                name="first_name"
                 id="first-name"
                 placeholder="First Name"
                 autoComplete="given-name"
@@ -33,7 +56,7 @@ function UserRegistration() {
 
               <input
                 type="text"
-                name="middle-name"
+                name="middle_name"
                 id="middle-name"
                 placeholder="Middle Name"
                 autoComplete="given-name"
@@ -51,7 +74,7 @@ function UserRegistration() {
 
               <input
                 type="text"
-                name="last-name"
+                name="last_name"
                 id="last-name"
                 placeholder="Last Name"
                 autoComplete="given-name"
@@ -79,15 +102,15 @@ function UserRegistration() {
 
             <div className="mt-4">
               <label
-                htmlFor="mobile no."
-                className="block ml-1 text-sm text-left font-medium leading-6 text-gray-900"
+                htmlFor="mobile_no."
+                className="block ml-1 text-sm text-left fmobileont-medium leading-6 text-gray-900"
               >
                 Mobile No.
               </label>
 
               <input
                 type="number"
-                name="mobile"
+                name="mobile_number"
                 id="mobile"
                 placeholder="Mobile Number"
                 autoComplete="given-name"
@@ -147,7 +170,8 @@ function UserRegistration() {
               </button>
             </a>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               className="rounded-md bg-lime-700 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-lime-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
             >
               Register Users
