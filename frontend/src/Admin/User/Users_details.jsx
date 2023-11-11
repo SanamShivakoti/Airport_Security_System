@@ -1,11 +1,15 @@
-// import { useState } from "react";
+import { Typography } from '@mui/material';
+import { useState } from "react";
+import { useRef } from "react";
 import { useRegisterUserMutation } from "../../services/userAuthApi";
+// import { storeToken } from '../../services/LocalStorageService';
 function UserRegistration() {
-  // const [server_error, setServerError] = useState()
+  const [server_error, setServerError] = useState({})
+  const formRef = useRef();
   const [registerUser] = useRegisterUserMutation()
   const handleSubmit= async (e)=>{
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
+    const data = new FormData(formRef.current);
     const actualData = {
       first_name: data.get('first_name'),
       middle_name: data.get('middle_name'),
@@ -19,7 +23,16 @@ function UserRegistration() {
     }
 
       const res =  await registerUser(actualData)
-      console.log(res)
+      
+      if(res.error){
+        setServerError(res.error.data.errors)
+      }
+
+      if(res.error){
+        console.log(typeof (res.data))
+        console.log(res.data)
+        // storeToken(res.data.token)
+      }
   }
 
   return (
@@ -30,7 +43,7 @@ function UserRegistration() {
           <div className="grid w-auto grid-cols-2 gap-4 laptop:px-40 desktop:px-52  tablet:px-32">
             <div className="mt-4">
               <label
-                htmlFor="first-name"
+                htmlFor="first_name"
                 className="block ml-1 text-sm text-left font-medium leading-6 text-gray-900"
               >
                 First name
@@ -44,11 +57,12 @@ function UserRegistration() {
                 autoComplete="given-name"
                 className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {server_error.name ? <Typography style={{ fontSize: 12, color: 'red', paddingLeft: 10 }}>{server_error.name[0]}</Typography> : ""}
             </div>
 
             <div className="mt-4">
               <label
-                htmlFor="middle-name"
+                htmlFor="middle_name"
                 className="block ml-1 text-sm text-left font-medium leading-6 text-gray-900"
               >
                 Middle name
@@ -66,7 +80,7 @@ function UserRegistration() {
 
             <div className="mt-4">
               <label
-                htmlFor="last-name"
+                htmlFor="last_name"
                 className="block ml-1 text-sm text-left font-medium leading-6 text-gray-900"
               >
                 Last name
@@ -102,7 +116,7 @@ function UserRegistration() {
 
             <div className="mt-4">
               <label
-                htmlFor="mobile_no."
+                htmlFor="mobile_number."
                 className="block ml-1 text-sm text-left fmobileont-medium leading-6 text-gray-900"
               >
                 Mobile No.
@@ -138,7 +152,7 @@ function UserRegistration() {
 
             <div className="mt-4">
               <label
-                htmlFor="confirm password"
+                htmlFor="confirm_password"
                 className="block ml-1 text-sm text-left font-medium leading-6 text-gray-900"
               >
                 Confirm password
@@ -146,8 +160,8 @@ function UserRegistration() {
 
               <input
                 type="password"
-                name="cpassword"
-                id="cpassword"
+                name="confirm_password"
+                id="confirm_password"
                 placeholder="Confirm password"
                 autoComplete="given-name"
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
