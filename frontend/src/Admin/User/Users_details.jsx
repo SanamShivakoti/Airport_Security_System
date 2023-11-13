@@ -2,11 +2,12 @@ import { Typography } from '@mui/material';
 import { useState } from "react";
 import { useRef } from "react";
 import { useRegisterUserMutation } from "../../services/userAuthApi";
-// import { storeToken } from '../../services/LocalStorageService';
+import { storeToken , getToken } from '../../services/LocalStorageService';
 function UserRegistration() {
   const [server_error, setServerError] = useState({})
   const formRef = useRef();
   const [registerUser] = useRegisterUserMutation()
+  const {access_token} = getToken()
   const handleSubmit= async (e)=>{
     e.preventDefault();
     const data = new FormData(formRef.current);
@@ -17,21 +18,21 @@ function UserRegistration() {
       email: data.get('email'),
       mobile_number: data.get('mobile_number'),
       password: data.get('password'),
-      cpassword: data.get('cpassword'),
-      role: data.get('role')
+      password2: data.get('confirm_password')
       
     }
 
-      const res =  await registerUser(actualData)
+      const res =  await registerUser({actualData, access_token})
       
       if(res.error){
+        console.log(res.error.data.errors)
         setServerError(res.error.data.errors)
       }
 
-      if(res.error){
-        console.log(typeof (res.data))
-        console.log(res.data)
-        // storeToken(res.data.token)
+      if(res.data){
+        // console.log(typeof (res.data))
+        // console.log(res.data)
+        storeToken(res.data.token)
       }
   }
 
@@ -39,7 +40,7 @@ function UserRegistration() {
     <div>
       <div className="text-3xl flex justify-center font-bold">Users Details</div>
       <div className="mt-8 ">
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
           <div className="grid w-auto grid-cols-2 gap-4 laptop:px-40 desktop:px-52  tablet:px-32">
             <div className="mt-4">
               <label
@@ -184,7 +185,7 @@ function UserRegistration() {
               </button>
             </a>
             <button
-              type="button"
+              type="submit"
               onClick={handleSubmit}
               className="rounded-md bg-lime-700 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-lime-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
             >
