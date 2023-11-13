@@ -7,17 +7,19 @@ export const userAuthApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:8000/api/admin/'}),
   endpoints: (builder) => ({
     registerUser: builder.mutation({
-        query:(user)=>{
-            return{
-                url:'register/user/',
-                method:'POST',
-                body: user,
-                headers:{
-                  'Content-type':'application/json'
-                }
-            }
-        }
-    }),
+      query:({ actualData, access_token })=>{
+          return{
+              url:'register/user/',
+              method:'POST',
+              body: actualData,
+              headers:{
+                'authorization':`Bearer ${access_token}`,
+                'Content-type':'application/json'
+                
+              }
+          }
+      }
+  }),
     loginUser: builder.mutation({
       query:(user)=>{
         return{
