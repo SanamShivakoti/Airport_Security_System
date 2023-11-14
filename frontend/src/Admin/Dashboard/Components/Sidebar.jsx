@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import UserRegistration from "../../User";
 import StaffsRegistration from "../../Staffs";
 import PassengersRegistration from "../../Passengers";
@@ -14,6 +14,7 @@ import { SidebarData } from "./Sidebardata";
 // import Avatar from "react-avatar";
 import img from "./user.png";
 function Sidebar() {
+  const navigate = useNavigate();
   return (
     <div className="main-content">
       <div className="content">
@@ -35,9 +36,7 @@ function Sidebar() {
               <li
                 key={key}
                 className={`row ${isActive ? "active" : ""}`}
-                onClick={() => {
-                  window.location.pathname = val.link;
-                }}
+                onClick={() => navigate(val.link)}
               >
                 {/**Display the icons and the name of the corresponding icons as title */}
                 <div id="icon">{val.icon}</div>
