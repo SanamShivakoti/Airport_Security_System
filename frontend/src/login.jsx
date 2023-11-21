@@ -42,10 +42,11 @@ export const Login = () => {
     if(res.data){
       // console.log(typeof(res.data))
       const role = res.data.role
-      storeToken(res.data.token)
-      let { access_token } = getToken()
-      dispatch(setUserToken({ access_token: access_token }))
+
       if (role === 'Admin'){
+        storeToken(res.data.token)
+        let { access_token } = getToken()
+        dispatch(setUserToken({ access_token: access_token }))
         navigate('/Admin/dashboard')
       }else{
         setServerError({ non_field_errors: ['!! Permission denied !!. You are not a Admin'] });
