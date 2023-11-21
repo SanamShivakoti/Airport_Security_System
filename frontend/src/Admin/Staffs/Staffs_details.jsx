@@ -1,9 +1,12 @@
+import { useNavigate } from "react-router-dom";
 function StaffsRegistration() {
 
   // function to open camera
   const openCamera = () => {
 
   };
+
+  const navigate = useNavigate();
   return (
     <div>
       <div className="text-3xl font-bold text-center">Staffs Details</div>
@@ -168,14 +171,15 @@ function StaffsRegistration() {
           </p>
 
           <div className="desktop:mt-24 laptop:mt-14 tablet:mt-14 flex items-center justify-end gap-x-6 laptop:px-40 desktop:px-52  tablet:px-32">
-            <a href="View/details">
+            
               <button
                 type="button"
+                onClick={()=> navigate('/Admin/Staff/View/details/')}
                 className="rounded-md bg-indigo-600 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 View Staffs
               </button>
-            </a>
+            
             <button
               type="submit"
               className="rounded-md bg-lime-700 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-lime-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"

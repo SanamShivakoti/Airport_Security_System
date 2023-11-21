@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import img from "./user.png";
 
 
 function Settings() {
-
   const inputRef = useRef(null);
   const [image, setImage] = useState("");
 
@@ -18,7 +18,7 @@ function Settings() {
     
   }
 
-  
+  const navigate = useNavigate();
   
   return(
     <div>
@@ -132,14 +132,15 @@ function Settings() {
           </div>
 
           <div className="desktop:mt-24 laptop:mt-14 tablet:mt-14 flex items-center justify-end gap-x-6 laptop:px-40 desktop:px-52  tablet:px-32">
-            <a href="Settings/verify/Otp">
+            
               <button
                 type="button"
+                onClick={()=> navigate('/Admin/Settings/verify/Otp/')}
                 className="rounded-md bg-indigo-600 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Change Password
               </button>
-            </a>
+            
             <button
               type="submit"
               className="rounded-md bg-lime-700 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-lime-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
