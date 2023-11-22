@@ -31,8 +31,20 @@ export const userAuthApi = createApi({
           }
         }
       }
-    })
+    }),
+    getUsers: builder.query({
+      query:({ access_token })=>{
+          return{
+              url:'users_list/',
+              method:'GET',
+              headers:{
+                'authorization':`Bearer ${access_token}`
+                
+              }
+          }
+      }
+  }),
   }),
 })
 
-export const {useRegisterUserMutation, useLoginUserMutation} = userAuthApi
+export const {useRegisterUserMutation, useLoginUserMutation, useGetUsersQuery} = userAuthApi
