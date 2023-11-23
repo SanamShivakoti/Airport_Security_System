@@ -10,6 +10,10 @@ function UserRegistration() {
   const [registerUser] = useRegisterUserMutation()
   const {access_token} = getToken()
   const navigate = useNavigate();
+
+  const resetformFields =() =>{
+    formRef.current.reset();
+  }
   const handleSubmit= async (e)=>{
     e.preventDefault();
     const data = new FormData(formRef.current);
@@ -32,8 +36,8 @@ function UserRegistration() {
       }
 
       if(res.data){
-        // console.log(typeof (res.data))
-        // console.log(res.data)
+
+        resetformFields()
         storeToken(res.data.token)
       }
   }
