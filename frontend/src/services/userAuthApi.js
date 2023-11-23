@@ -19,7 +19,7 @@ export const userAuthApi = createApi({
               }
           }
       }
-  }),
+    }),
     loginUser: builder.mutation({
       query:(user)=>{
         return{
@@ -43,8 +43,23 @@ export const userAuthApi = createApi({
               }
           }
       }
-  }),
+    }),
+    filterUsers: builder.query({
+      query:({ access_token, user_id })=>{
+       
+          return{
+              url:`user_filter/${user_id}/`,
+              method:'GET',
+              headers:{
+                'authorization':`Bearer ${access_token}`
+                
+              }
+              
+          }
+          
+      }
+    }),
   }),
 })
 
-export const {useRegisterUserMutation, useLoginUserMutation, useGetUsersQuery} = userAuthApi
+export const {useRegisterUserMutation, useLoginUserMutation, useGetUsersQuery, useFilterUsersQuery, useDeleteUserMutation} = userAuthApi
