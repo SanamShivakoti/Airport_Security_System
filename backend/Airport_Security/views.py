@@ -13,9 +13,10 @@ from rest_framework.permissions import IsAuthenticated
 from Airport_Security.utils import generate_otp, Util
 from django.utils import timezone
 from datetime import timedelta
-from Airport_Security.serializers import OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,UpdateUserSerializer, DeleteUserSerializer
+from Airport_Security.serializers import OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,UpdateUserSerializer, DeleteUserSerializer, FilterUserSerializer
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -179,20 +180,51 @@ class UpdateUserView(APIView):
             return Response({'msg': 'User updated successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# class DeleteUserView(APIView):
+#     renderer_classes = [UserRenderer]
+#     permission_classes = [IsAuthenticated]
+
+#     @role_required(['Admin'])
+#     def delete(self, request):
+#         serializer = DeleteUserSerializer(data = request.data)
+#         if serializer.is_valid(raise_exception=True):
+#             user_id = serializer.data.get('user_id')
+#             try:
+#                 user = User.objects.get(user_id=user_id)
+#                 user.delete()
+#                 return Response({'msg': 'User deleted successfully'}, status=status.HTTP_200_OK)
+#             except User.DoesNotExist:
+#                 return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+class FilterUserView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    @role_required(['Admin'])
+    def get(self, request, user_id):
+
+        try:
+            user = User.objects.get(user_id=user_id)
+
+            serializer = FilterUserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
 class DeleteUserView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
 
     @role_required(['Admin'])
-    def delete(self, request):
-        serializer = DeleteUserSerializer(data = request.data)
-        if serializer.is_valid(raise_exception=True):
-            user_id = serializer.data.get('user_id')
-            try:
-                user = User.objects.get(user_id=user_id)
-                user.delete()
-                return Response({'msg': 'User deleted successfully'}, status=status.HTTP_200_OK)
-            except User.DoesNotExist:
-                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, user_id):
+        # The user_id is now a parameter in the URL, not in the request body
+        try:
+            user = get_object_or_404(User, user_id=user_id)
+            user.delete()
+            return Response({'msg': 'User deleted successfully'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
