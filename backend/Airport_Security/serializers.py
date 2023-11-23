@@ -63,3 +63,8 @@ class DeleteUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['user_id']
+
+class FilterUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
