@@ -1,14 +1,15 @@
 import React, { useState, useMemo } from "react";
-import { useGetUsersQuery } from "../../../services/userAuthApi";
+import { useGetUsersQuery , useDeleteUserMutation} from "../../../services/userAuthApi";
 import { getToken } from "../../../services/LocalStorageService";
-import axios from "axios";
+// import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function ViewUsers() {
   const [userIdSearch, setUserIdSearch] = useState("");
   const [serverError, setServerError] = useState({});
   const [successMessage, setSuccessMessage] = useState({});
   const { access_token } = getToken();
-
+  const navigate = useNavigate();
   // Fetch users data using the useGetUsersQuery hook
   const { data: users = [], error, isLoading } = useGetUsersQuery({
     access_token,
@@ -25,31 +26,22 @@ function ViewUsers() {
   const handleSearchChange = (e) => {
     setUserIdSearch(e.target.value);
   };
+  const [handleDelete, res] = useDeleteUserMutation()
+  
 
-  const handleDelete = async (user_id) => {
+  const deleteUser = async (user_id, access_token) => {
     try {
-      const response = await axios.delete(
-        `http://127.0.0.1:8000/api/admin/user_delete/${user_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        }
-      );
-
-      if (response.data.error) {
-        console.error("Error deleting user:", response.error);
-        setServerError(response.data.error);
-      } else if (response.data.msg) {
-        setSuccessMessage(response.data.msg);
-        window.location.reload();
-      }
+      const response = await handleDelete({ user_id, access_token });
+      window.location.reload();
     } catch (error) {
-      console.error("Error deleting user:", error);
+      
     }
   };
 
-  if (isLoading) {
+  const handleEditUser = async(user_id) =>{
+    navigate(`Edit/${user_id}`)
+  }
+  if (isLoading || res.isLoading) {
     return <div>Loading...</div>;
   }
 
@@ -108,6 +100,7 @@ function ViewUsers() {
                     <button
                       type="button"
                       className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      onClick={() => handleEditUser(user.user_id)}
                     >
                       Edit
                     </button>
@@ -116,7 +109,7 @@ function ViewUsers() {
                     <button
                       type="submit"
                       className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-                      onClick={() => handleDelete(user.user_id)}
+                      onClick={() => {deleteUser(user.user_id, access_token)}}
                     >
                       Delete
                     </button>
