@@ -57,12 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['user_id']
-
-class DeleteUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['user_id']
+        fields = '__all__'
 
 class FilterUserSerializer(serializers.ModelSerializer):
     class Meta:
