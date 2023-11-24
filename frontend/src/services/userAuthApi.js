@@ -45,18 +45,31 @@ export const userAuthApi = createApi({
       }
     }),
     filterUsers: builder.query({
-      query:({ access_token, user_id })=>{
-       
+      query:({ user_id,access_token})=>{
+  
           return{
               url:`user_filter/${user_id}/`,
               method:'GET',
               headers:{
-                'authorization':`Bearer ${access_token}`
+                'authorization':`Bearer ${access_token}`,
+                'Content-type':'application/json'
                 
               }
               
           }
           
+      }
+    }),
+    DeleteUser: builder.mutation({
+      query:({user_id, access_token})=>{
+         
+        return{
+          url:`user_delete/${user_id}/`,
+          method: 'DELETE',
+          headers:{
+            'authorization':`Bearer ${access_token}`
+          }
+        }
       }
     }),
   }),
