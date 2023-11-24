@@ -8,7 +8,7 @@ urlpatterns = [
     path('otp_verification/', VerifyOtpView.as_view(), name='otp_verification'),
     path('password_reset/', OTPVerifiedPasswordResetView.as_view(), name='password_reset'),
     path('users_list/', UserView.as_view(), name='users_list'),
-    path('user_update/', UpdateUserView.as_view(), name='user_update'),
+    path('user_update/<str:user_id>/', UpdateUserView.as_view(), name='user_update'),
     path('user_delete/<str:user_id>/', DeleteUserView.as_view(), name='user_delete'),
     path('user_filter/<str:user_id>/', FilterUserView.as_view(), name='user_filter'),
 
