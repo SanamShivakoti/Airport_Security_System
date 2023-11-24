@@ -8,6 +8,7 @@ import ViewPassengers from "../../Passengers/view_passengers";
 import ViewStaffs from "../../Staffs/view_staffs";
 import OtpVerification from "../../Settings/Change_password";
 import NewPasswordForm from "../../Settings/Change_password/set_new_password";
+import EditUser from "../../User/edit_user";
 import "./sidebar.css";
 import Content from "../Contents";
 import { SidebarData } from "./Sidebardata";
@@ -78,6 +79,8 @@ function Sidebar() {
         <Route path="/settings/set/newpassword" element={<NewPasswordForm />} />
         {/* for Amdin User view details */}
         <Route path="/User/View/details" element={<ViewUsers />} />
+        {/* for Admin User Edit */}
+        <Route path="User/View/details/Edit/:user_id"  element={<EditUser />} />
       </Routes>
     </div>
   );
