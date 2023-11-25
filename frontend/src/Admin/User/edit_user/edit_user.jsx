@@ -1,21 +1,44 @@
 import { useParams } from "react-router-dom";
 import { Typography } from '@mui/material';
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import { useRef } from "react";
-import { useRegisterUserMutation, useFilterUsersQuery } from "../../../services/userAuthApi";
+import { useUpdateUserMutation, useFilterUsersQuery } from "../../../services/userAuthApi";
 import { storeToken , getToken } from '../../../services/LocalStorageService';
 
 function EditUser(){
     const [server_error, setServerError] = useState({})
     const formRef = useRef();
-    const [registerUser] = useRegisterUserMutation()
+    const [updateUser] = useUpdateUserMutation()
     const {access_token} = getToken()
     const {user_id} = useParams();
     const {data, isLoading } = useFilterUsersQuery({user_id, access_token});
-    console.log(data)
     
     
-   
+    const [userData, setUserData] = useState({
+      first_name: "",
+      middle_name: "",
+      last_name: "",
+      email: "",
+      mobile_number: "",
+      password: ""
+    });
+    
+    useEffect(() => {
+      
+      if (data) {
+        setUserData((prevUserData) => ({
+          ...prevUserData,
+          first_name: data.first_name || "",
+          middle_name: data.middle_name || "",
+          last_name: data.last_name || "",
+          email: data.email || "",
+          mobile_number: data.mobile_number || "",
+          password: data.password || ""
+        }));
+      }
+    }, [data]); 
+    
+    
     const handleSubmit= async (e)=>{
         e.preventDefault();
         const data = new FormData(formRef.current);
@@ -25,12 +48,13 @@ function EditUser(){
             last_name: data.get('last_name'),
             email: data.get('email'),
             mobile_number: data.get('mobile_number'),
-            password: data.get('password'),
-            password2: data.get('confirm_password')
+            password: data.get('password')
             
         }
 
-        const res =  await registerUser({actualData, access_token})
+      
+
+        const res =  await updateUser({user_id, actualData, access_token})
         
         if(res.error){
         console.log(res.error.data.errors)
@@ -64,8 +88,11 @@ function EditUser(){
                     id="first-name"
                     placeholder="First Name"
                     autoComplete="given-name"
+                    value={userData.first_name}
+                    onChange={(e) => setUserData({ ...userData, first_name: e.target.value })}
                     className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  
                   {server_error.name ? <Typography style={{ fontSize: 12, color: 'red', paddingLeft: 10 }}>{server_error.name[0]}</Typography> : ""}
                 </div>
     
@@ -83,6 +110,8 @@ function EditUser(){
                     id="middle-name"
                     placeholder="Middle Name"
                     autoComplete="given-name"
+                    value={userData.middle_name}
+                    onChange={(e) => setUserData({ ...userData, middle_name: e.target.value })}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -101,6 +130,8 @@ function EditUser(){
                     id="last-name"
                     placeholder="Last Name"
                     autoComplete="given-name"
+                    value={userData.last_name}
+                    onChange={(e) => setUserData({ ...userData, last_name: e.target.value })}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -119,6 +150,8 @@ function EditUser(){
                     id="email"
                     placeholder="Email"
                     autoComplete="given-name"
+                    value={userData.email}
+                    onChange={(e) => setUserData({ ...userData, email: e.target.value })}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -137,6 +170,8 @@ function EditUser(){
                     id="mobile"
                     placeholder="Mobile Number"
                     autoComplete="given-name"
+                    value={userData.mobile_number}
+                    onChange={(e) => setUserData({ ...userData, mobile_number: e.target.value })}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -155,27 +190,13 @@ function EditUser(){
                     id="password"
                     placeholder="Password"
                     autoComplete="given-name"
+                    value={userData.password}
+                    onChange={(e) => setUserData({ ...userData, password: e.target.value })}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
                 </div>
     
-                <div className="mt-4">
-                  <label
-                    htmlFor="confirm_password"
-                    className="block ml-1 text-sm text-left font-medium leading-6 text-gray-900"
-                  >
-                    Confirm password
-                  </label>
-    
-                  <input
-                    type="password"
-                    name="confirm_password"
-                    id="confirm_password"
-                    placeholder="Confirm password"
-                    autoComplete="given-name"
-                    className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  />
-                </div>
+
               </div>
     
 
