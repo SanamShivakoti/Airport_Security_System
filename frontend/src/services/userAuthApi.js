@@ -44,6 +44,18 @@ export const userAuthApi = createApi({
           }
       }
     }),
+    AdminProfileView: builder.query({
+      query:({ access_token })=>{
+          return{
+              url:'profile/',
+              method:'GET',
+              headers:{
+                'authorization':`Bearer ${access_token}`
+                
+              }
+          }
+      }
+    }),
     filterUsers: builder.query({
       query:({ user_id,access_token})=>{
   
@@ -72,7 +84,41 @@ export const userAuthApi = createApi({
         }
       }
     }),
+    updateUser: builder.mutation({
+      query:({ user_id, actualData, access_token })=>{
+          return{
+              url:`user_update/${user_id}/`,
+              method:'PATCH',
+              body: actualData,
+              headers:{
+                'authorization':`Bearer ${access_token}`,
+                'Content-type':'application/json'
+                
+              }
+          }
+      }
+    }),
+    SendOTP: builder.mutation({
+      query:({ access_token })=>{
+          return{
+              url:'send_otp_email/',
+              method:'POST',
+              headers:{
+                'authorization':`Bearer ${access_token}`,
+                'Content-type':'application/json'
+                
+              }
+          }
+      }
+    }),
   }),
 })
 
-export const {useRegisterUserMutation, useLoginUserMutation, useGetUsersQuery, useFilterUsersQuery, useDeleteUserMutation} = userAuthApi
+export const {useRegisterUserMutation, 
+  useLoginUserMutation, 
+  useGetUsersQuery,
+  useAdminProfileViewQuery, 
+  useFilterUsersQuery,
+  useUpdateUserMutation, 
+  useDeleteUserMutation,
+  useSendOTPMutation} = userAuthApi
