@@ -1,5 +1,6 @@
 from Airport_Security.check_roles import role_required
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.hashers import make_password
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -64,9 +65,11 @@ class LoginUserView(APIView):
 
 
 # User Profile View of Logined Users
-class UserProfileView(APIView):
+class AdminProfileView(APIView):
   renderer_classes = [UserRenderer]
   permission_classes = [IsAuthenticated]
+  
+  @role_required(['Admin']) 
   def get(self, request, format=None):
     serializer = UserProfileSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -170,6 +173,11 @@ class UpdateUserView(APIView):
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if 'password' in request.data:
+        
+            request.data['password'] = make_password(request.data['password'])
+
 
         serializer = UpdateUserSerializer(user, data=request.data)
         if serializer.is_valid():
