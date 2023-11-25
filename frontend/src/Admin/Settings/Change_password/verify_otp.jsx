@@ -1,11 +1,25 @@
 import React, { useState } from "react";
 import {useNavigate} from "react-router-dom";
-
+import { useSendOTPMutation } from "../../../services/userAuthApi";
+import { getToken } from "../../../services/LocalStorageService";
 function OtpVerification() {
   const [otp, setOtp] = useState("");
   const [verificationStatus, setVerificationStatus] = useState("");
   const [otpSent, setOtpSent] = useState(false); // Track whether OTP has been sent
   const navigate = useNavigate();
+  const {access_token} = getToken();
+
+
+  const [sendotp,res] = useSendOTPMutation();
+  const otpSend = async(access_token) =>{
+    try{
+      const response = await sendotp({access_token});
+      setOtpSent(true);
+      setVerificationStatus("OTP of 6 digits has been sent to your email.")
+    } catch (error) {
+
+    }
+  }
   const handleOtpChange = (e) => {
     setOtp(e.target.value);
   };
@@ -54,7 +68,7 @@ function OtpVerification() {
             </>
           ) : (
             <button
-              onClick={handleResendOtp}
+              onClick={() => {otpSend(access_token)}}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
               Receive OTP
