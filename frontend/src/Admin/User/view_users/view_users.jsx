@@ -1,7 +1,11 @@
 import React, { useState, useMemo } from "react";
-import { useGetUsersQuery , useDeleteUserMutation} from "../../../services/userAuthApi";
-import { getToken } from "../../../services/LocalStorageService";
-// import axios from "axios";
+import { useDispatch } from "react-redux";
+import {
+  useGetUsersQuery,
+  useDeleteUserMutation,
+} from "../../../services/userAuthApi";
+import { getToken, removeToken } from "../../../services/LocalStorageService";
+import { setUserToken } from "../../../features/authSlice";
 import { useNavigate } from "react-router-dom";
 
 function ViewUsers() {
@@ -10,37 +14,48 @@ function ViewUsers() {
   const [successMessage, setSuccessMessage] = useState({});
   const { access_token } = getToken();
   const navigate = useNavigate();
-  // Fetch users data using the useGetUsersQuery hook
-  const { data: users = [], error, isLoading } = useGetUsersQuery({
+  const dispatch = useDispatch();
+
+  const {
+    data: users = [],
+    error,
+    isLoading,
+  } = useGetUsersQuery({
     access_token,
   });
 
-  // Memoized filtering of users based on search input
   const filteredUsers = useMemo(() => {
     return users.filter((user) =>
       user.user_id.toLowerCase().includes(userIdSearch.toLowerCase())
     );
   }, [users, userIdSearch]);
 
+  const [handleDelete, res] = useDeleteUserMutation();
+
+  if (error) {
+    if (error.status === 401) {
+      console.log("TOken Expired here");
+      dispatch(setUserToken({ access_token: "", isAuthenticated: false }));
+      removeToken();
+      return navigate("/");
+    }
+  }
+
   // Function to handle search input change
   const handleSearchChange = (e) => {
     setUserIdSearch(e.target.value);
   };
-  const [handleDelete, res] = useDeleteUserMutation()
-  
 
   const deleteUser = async (user_id, access_token) => {
     try {
       const response = await handleDelete({ user_id, access_token });
       window.location.reload();
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   };
 
-  const handleEditUser = async(user_id) =>{
-    navigate(`Edit/${user_id}`)
-  }
+  const handleEditUser = async (user_id) => {
+    navigate(`Edit/${user_id}`);
+  };
   if (isLoading || res.isLoading) {
     return <div>Loading...</div>;
   }
@@ -109,7 +124,9 @@ function ViewUsers() {
                     <button
                       type="submit"
                       className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-                      onClick={() => {deleteUser(user.user_id, access_token)}}
+                      onClick={() => {
+                        deleteUser(user.user_id, access_token);
+                      }}
                     >
                       Delete
                     </button>
