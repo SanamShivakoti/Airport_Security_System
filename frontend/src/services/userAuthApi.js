@@ -39,7 +39,6 @@ export const userAuthApi = createApi({
               method:'GET',
               headers:{
                 'authorization':`Bearer ${access_token}`
-                
               }
           }
       }
@@ -51,7 +50,6 @@ export const userAuthApi = createApi({
               method:'GET',
               headers:{
                 'authorization':`Bearer ${access_token}`
-                
               }
           }
       }
@@ -111,14 +109,46 @@ export const userAuthApi = createApi({
           }
       }
     }),
+    VerifyOTP: builder.mutation({
+      query:({ access_token, otp})=>{
+          return{
+              url:'otp_verification/',
+              method:'POST',
+              body:{otp},
+              headers:{
+                'authorization':`Bearer ${access_token}`,
+                'Content-type':'application/json'
+                
+              }
+          }
+      }
+    }),
+    ResetPassword: builder.mutation({
+      query:({ actualData, access_token })=>{
+          return{
+              url:'change_password/',
+              method:'PUT',
+              body:actualData,
+              headers:{
+                'authorization':`Bearer ${access_token}`,
+                'Content-type':'application/json'
+                
+              }
+          }
+      }
+    }),
+
   }),
 })
 
-export const {useRegisterUserMutation, 
+export const {
+  useRegisterUserMutation, 
   useLoginUserMutation, 
   useGetUsersQuery,
   useAdminProfileViewQuery, 
   useFilterUsersQuery,
   useUpdateUserMutation, 
   useDeleteUserMutation,
-  useSendOTPMutation} = userAuthApi
+  useSendOTPMutation,
+  useVerifyOTPMutation,
+  useResetPasswordMutation} = userAuthApi
