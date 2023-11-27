@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from Airport_Security.utils import generate_otp, Util
 from django.utils import timezone
 from datetime import timedelta
-from Airport_Security.serializers import OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer
+from Airport_Security.serializers import OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -113,7 +113,7 @@ class VerifyOtpView(APIView):
 
         user = request.user
         if user.otp == otp:
-            time_limit = timedelta(minutes=5)  # Adjust the time limit as needed
+            time_limit = timedelta(minutes=1)  
             if user.otp_timestamp and timezone.now() - user.otp_timestamp < time_limit:
                 user.otp = None
                 user.otp_timestamp = None
@@ -124,26 +124,26 @@ class VerifyOtpView(APIView):
             else:
                 return Response({'error': 'OTP has expired'}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Incorrect OTP. Please try again.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Password Reset View after OTP Verified
 class OTPVerifiedPasswordResetView(APIView):
 
-    def OTPVerifiedPasswordReset(request):
+    def OTPVerifiedPasswordReset(self,request):
         user = request.user
 
         if user.otp:
             return HttpResponseRedirect(reverse('otp_verification'))
         else:
             if request.method =='POST':
-                serializer = PasswordResetSerializer(data=request.POST)
+                serializer = PasswordResetSerializer(data=self.request.POST)
                 if serializer.is_valid():
                     new_password = serializer.validated_data['password']
                     user.set_password(new_password)
                     user.save()
 
-                    return Response({'error':'Password changed successfully'}, status=status.HTTP_200_OK) 
+                    return Response({'msg':'Password changed successfully'}, status=status.HTTP_200_OK) 
                 else:
                     return Response({'error': 'Password changed Unsuccessful'}, status=status.HTTP_400_BAD_REQUEST)
                 
@@ -215,3 +215,17 @@ class DeleteUserView(APIView):
             return Response({'msg': 'User deleted successfully'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class AdminChangePasswordView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    
+    @role_required(['Admin'])
+    def put(self, request):
+        user = request.user
+        serializer = AdminChangePasswordSerializer(user, data=self.request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'Password Reset successfully'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
