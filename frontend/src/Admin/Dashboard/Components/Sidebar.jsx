@@ -1,4 +1,5 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import UserRegistration from "../../User";
 import StaffsRegistration from "../../Staffs";
 import PassengersRegistration from "../../Passengers";
@@ -9,6 +10,8 @@ import ViewStaffs from "../../Staffs/view_staffs";
 import OtpVerification from "../../Settings/Change_password";
 import NewPasswordForm from "../../Settings/Change_password/set_new_password";
 import EditUser from "../../User/edit_user";
+import { useAdminProfileViewQuery } from "../../../services/userAuthApi";
+import { getToken } from "../../../services/LocalStorageService";
 import "./sidebar.css";
 import Content from "../Contents";
 import { SidebarData } from "./Sidebardata";
@@ -16,6 +19,18 @@ import { SidebarData } from "./Sidebardata";
 import img from "./user.png";
 function Sidebar() {
   const navigate = useNavigate();
+  const {access_token} = getToken();
+  const [userName, setUserName] = useState({})
+  const {data} = useAdminProfileViewQuery({access_token})
+
+  useEffect(() =>{
+    if(data){
+      setUserName(data)
+    }
+  },[data]);
+
+  
+  console.log(userName)
   return (
     <div className="main-content">
       <div className="content">
@@ -24,7 +39,7 @@ function Sidebar() {
         <div className="profile">
           {/* <Avatar src="./user.png" /> */}
           <img id="profile-image" alt="" src={img} />
-          <div id="ProfileName">User Name</div>
+          <div id="ProfileName">{`${userName.first_name} ${userName.middle_name} ${userName.last_name}`}</div>
           <hr />
         </div>
 
