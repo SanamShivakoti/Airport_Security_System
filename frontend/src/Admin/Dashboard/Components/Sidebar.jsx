@@ -15,22 +15,21 @@ import { getToken } from "../../../services/LocalStorageService";
 import "./sidebar.css";
 import Content from "../Contents";
 import { SidebarData } from "./Sidebardata";
+
 // import Avatar from "react-avatar";
 import img from "./user.png";
 function Sidebar() {
   const navigate = useNavigate();
-  const {access_token} = getToken();
-  const [userName, setUserName] = useState({})
-  const {data} = useAdminProfileViewQuery({access_token})
+  const { access_token } = getToken();
+  const [userName, setUserName] = useState({});
+  const { data } = useAdminProfileViewQuery({ access_token });
 
-  useEffect(() =>{
-    if(data){
-      setUserName(data)
+  useEffect(() => {
+    if (data) {
+      setUserName(data);
     }
-  },[data]);
-
+  }, [data]);
   
-  console.log(userName)
   return (
     <div className="main-content">
       <div className="content">
@@ -68,16 +67,10 @@ function Sidebar() {
         {/**Admin Users Registration route */}
         <Route path="/User/Registration" element={<UserRegistration />} />
         {/**Admin Staffs Registration route */}
-        <Route
-          path="/Staff/Registration"
-          element={<StaffsRegistration />}
-        />
+        <Route path="/Staff/Registration" element={<StaffsRegistration />} />
 
         {/* for Admin Staffs view details */}
-        <Route 
-          path="/Staff/View/details"
-          element={<ViewStaffs />}
-        />
+        <Route path="/Staff/View/details" element={<ViewStaffs />} />
         {/**Admin Passengers Registration route */}
         <Route
           path="/Passenger/Registration"
@@ -85,17 +78,17 @@ function Sidebar() {
         />
 
         {/* for Admin Passengers view details */}
-        <Route path="/Passenger/View/details"  element={<ViewPassengers />}/>
+        <Route path="/Passenger/View/details" element={<ViewPassengers />} />
         {/**Admin Setting route */}
         <Route path="/Settings/" element={<Settings />} />
         {/* for Admin OTP verifaction */}
-        <Route path="/Settings/verify/Otp" element={<OtpVerification/>} />
+        <Route path="/Settings/verify/Otp" element={<OtpVerification />} />
         {/* for Admin set new password */}
         <Route path="/settings/set/newpassword" element={<NewPasswordForm />} />
         {/* for Amdin User view details */}
         <Route path="/User/View/details" element={<ViewUsers />} />
         {/* for Admin User Edit */}
-        <Route path="User/View/details/Edit/:user_id"  element={<EditUser />} />
+        <Route path="User/View/details/Edit/:user_id" element={<EditUser />} />
       </Routes>
     </div>
   );
