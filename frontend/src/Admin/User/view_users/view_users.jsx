@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import {
   useGetUsersQuery,
   useDeleteUserMutation,
 } from "../../../services/userAuthApi";
 import { getToken, removeToken } from "../../../services/LocalStorageService";
-import { setUserToken } from "../../../features/authSlice";
+import { removeUserToken } from "../../../features/authSlice";
 import { useNavigate } from "react-router-dom";
 
 function ViewUsers() {
@@ -20,9 +20,14 @@ function ViewUsers() {
     data: users = [],
     error,
     isLoading,
+    refetch,
   } = useGetUsersQuery({
     access_token,
   });
+
+  useEffect(() => {
+    refetch();
+  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) =>
@@ -34,8 +39,7 @@ function ViewUsers() {
 
   if (error) {
     if (error.status === 401) {
-      console.log("TOken Expired here");
-      dispatch(setUserToken({ access_token: "", isAuthenticated: false }));
+      dispatch(removeUserToken());
       removeToken();
       return navigate("/");
     }

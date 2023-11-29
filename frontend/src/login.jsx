@@ -46,7 +46,7 @@ export const Login = () => {
       if (role === 'Admin'){
         storeToken(res.data.token)
         let { access_token } = getToken()
-        dispatch(setUserToken({ access_token: access_token }))
+        dispatch(setUserToken({ access_token: access_token, isAuthenticated: true }))
         navigate('/Admin/dashboard')
       }else{
         setServerError({ non_field_errors: ['!! Permission denied !!. You are not a Admin'] });
@@ -54,10 +54,10 @@ export const Login = () => {
       
     }
   }
-  let { access_token } = getToken()
-  useEffect(() => {
-    dispatch(setUserToken({ access_token: access_token }))
-  }, [access_token, dispatch])
+  // let { access_token } = getToken()
+  // useEffect(() => {
+  //   dispatch(setUserToken({ access_token: access_token }))
+  // }, [access_token, dispatch])
 
   return (
     

@@ -11,20 +11,44 @@ function PrivateRoute({ element, authenticated, redirectTo }) {
   return authenticated ? (
     element
   ) : (
-    <Navigate to={redirectTo} replace state={{ from: window.location.pathname }} />
+    <Navigate
+      to={redirectTo}
+      replace
+      state={{ from: window.location.pathname }}
+    />
   );
 }
 
 function Url() {
-  const {access_token} = useSelector(state => state.auth)
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  console.log("isAuthenticated", isAuthenticated);
+
   return (
     <BrowserRouter>
       <Routes>
         {/* login page route */}
-        <Route path="/" element={<PrivateRoute element={<Login />} authenticated={!access_token} redirectTo="/Admin/dashboard/" />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute
+              element={<Login />}
+              authenticated={!isAuthenticated}
+              redirectTo="/Admin/dashboard/"
+            />
+          }
+        />
 
         {/* Admin controls route */}
-        <Route path="/Admin/*"  element={<PrivateRoute element={<Sidebar />} authenticated={!!access_token} redirectTo="/" />} />
+        <Route
+          path="/Admin/*"
+          element={
+            <PrivateRoute
+              element={<Sidebar />}
+              authenticated={!!isAuthenticated}
+              redirectTo="/"
+            />
+          }
+        />
 
         {/* Users controls route */}
         <Route path="/User/*" element={<Usersidebar />} />
