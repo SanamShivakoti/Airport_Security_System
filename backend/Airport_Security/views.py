@@ -16,8 +16,11 @@ from django.utils import timezone
 from datetime import timedelta
 from Airport_Security.serializers import OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
+import requests
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
+import cv2
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -43,7 +46,7 @@ class UserRegistrationView(APIView):
         
         user = serializer.save()
         token = get_tokens_for_user(user)
-        return Response({'token':token,'msg' : 'Registration Successful'}, status=status.HTTP_201_CREATED)
+        return Response({'msg' : 'Registration Successful'}, status=status.HTTP_201_CREATED)
 
       
 # login User View
@@ -178,13 +181,11 @@ class UpdateUserView(APIView):
         
             request.data['password'] = make_password(request.data['password'])
 
-
         serializer = UpdateUserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({'msg': 'User updated successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class FilterUserView(APIView):
     renderer_classes = [UserRenderer]
@@ -229,3 +230,22 @@ class AdminChangePasswordView(APIView):
             serializer.save()
             return Response({'msg': 'Password Reset successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+def open_camera(request):
+    raspberry_pi_url = 'http://192.168.25.25:8000/api/raspberrypi/start_camera/'
+
+    try:
+        response = requests.get(raspberry_pi_url)
+        data = response.json()
+
+        print(data)
+
+        if 'status' in data and data['status'] == 'success':
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Failed to open the camera on Raspberry Pi'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+    
