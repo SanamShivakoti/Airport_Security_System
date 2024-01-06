@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Alert, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Alert, Typography } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { useResetPasswordMutation } from "../../../services/userAuthApi";
 import { getToken, removeToken } from "../../../services/LocalStorageService";
 function NewPasswordForm() {
@@ -9,7 +9,7 @@ function NewPasswordForm() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordChanged, setPasswordChanged] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState("");
-  const {access_token} = getToken();
+  const { access_token } = getToken();
   const [ResetPassword] = useResetPasswordMutation();
   const formRef = useRef();
   const navigate = useNavigate();
@@ -24,48 +24,49 @@ function NewPasswordForm() {
   useEffect(() => {
     if (passwordChanged) {
       const timer = setTimeout(() => {
-      
         removeToken();
+        navigate("/");
         window.location.reload();
-      }, 3000);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [passwordChanged, navigate]);
 
-
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData(formRef.current);
     const actualData = {
-      password: data.get('password'),
-      password2: data.get('confirm_password')
-    }
+      password: data.get("password"),
+      password2: data.get("confirm_password"),
+    };
 
-    const res = await ResetPassword({actualData, access_token})
+    const res = await ResetPassword({ actualData, access_token });
 
-    if (res.error){
-     console.log(res.error.data.errors)
+    if (res.error) {
+      console.log(res.error.data.errors);
       setPasswordError(res.error.data.errors);
-    }else {
-      setPasswordSuccess(res.data.msg)
-      console.log(res.data.msg)
+    } else {
+      setPasswordSuccess(res.data.msg);
+      console.log(res.data.msg);
       setPasswordChanged(true);
     }
   };
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-semibold text-center my-4">Set New Password</h1>
+      <h1 className="text-3xl font-semibold text-center my-4">
+        Set New Password
+      </h1>
       <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
         {passwordChanged ? (
-          <p className="mt-4 text-center text-green-600">
-            {passwordSuccess}</p>
+          <p className="mt-4 text-center text-green-600">{passwordSuccess}</p>
         ) : (
-          <form  ref={formRef}  onSubmit={handleSubmit}>
+          <form ref={formRef} onSubmit={handleSubmit}>
             <div className="mb-4 ">
-              <label 
-              htmlFor="password"
-              className="block text-gray-700 text-sm font-bold mb-2">
+              <label
+                htmlFor="password"
+                className="block text-gray-700 text-sm font-bold mb-2"
+              >
                 New Password:
               </label>
               <input
@@ -75,17 +76,24 @@ function NewPasswordForm() {
                 onChange={handleNewPasswordChange}
                 autoComplete="given-name"
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:ring-2 focus:ring-inset focus:ring-indigo-600"
-                style={{marginBottom: '4px'}}
-
+                style={{ marginBottom: "4px" }}
               />
-              {passwordError.password ? <Typography style={{ fontSize: 12, color: 'red', paddingLeft: 10  }}>{passwordError.password[0]}</Typography> : ""}
-           
+              {passwordError.password ? (
+                <Typography
+                  style={{ fontSize: 12, color: "red", paddingLeft: 10 }}
+                >
+                  {passwordError.password[0]}
+                </Typography>
+              ) : (
+                ""
+              )}
             </div>
-            
+
             <div className="mb-4">
-              <label 
-              htmlFor="confirm_password"
-              className="block text-gray-700 text-sm font-bold mb-2">
+              <label
+                htmlFor="confirm_password"
+                className="block text-gray-700 text-sm font-bold mb-2"
+              >
                 Confirm Password:
               </label>
               <input
@@ -95,12 +103,19 @@ function NewPasswordForm() {
                 onChange={handleConfirmPasswordChange}
                 autoComplete="given-namr"
                 className="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:ring-2 focus:ring-inset focus:ring-indigo-600"
-                style={{marginBottom: '4px'}}
-               
+                style={{ marginBottom: "4px" }}
               />
-              {passwordError.password2 ? <Typography style={{ fontSize: 12, color: 'red', paddingLeft: 10 }}>{passwordError.password2[0]}</Typography> : ""}
+              {passwordError.password2 ? (
+                <Typography
+                  style={{ fontSize: 12, color: "red", paddingLeft: 10 }}
+                >
+                  {passwordError.password2[0]}
+                </Typography>
+              ) : (
+                ""
+              )}
             </div>
-            
+
             <div className="text-center">
               <button
                 type="submit"
@@ -110,7 +125,13 @@ function NewPasswordForm() {
                 Set New Password
               </button>
             </div>
-            {passwordError.non_field_errors ? <Alert severity='error'>{passwordError.non_field_errors[0]}</Alert> : ''}
+            {passwordError.non_field_errors ? (
+              <Alert severity="error">
+                {passwordError.non_field_errors[0]}
+              </Alert>
+            ) : (
+              ""
+            )}
           </form>
         )}
       </div>
