@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User    
+from .models import User, Passenger   
 from django.contrib.auth.hashers import make_password
 
 # serializer for User Registration
@@ -22,7 +22,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validate_data):
-        print(validate_data)
         return User.objects.create_user(**validate_data)
 
 # serializer for Login User
@@ -87,3 +86,10 @@ class AdminChangePasswordSerializer(serializers.ModelSerializer):
     
     def create(self, validate_data):
         return User.objects.create_user(**validate_data)
+    
+    # Passengers Serializers
+
+class PassengerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passenger
+        fields = '__all__'
