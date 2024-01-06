@@ -4,18 +4,15 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from Airport_Security.models import User
+from .models import User, Passenger
 from django.contrib.auth import authenticate 
-from Airport_Security.serializers import UserRegistrationSerializer, LoginUserSerializer
+from Airport_Security.serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer
 from Airport_Security.renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
-from Airport_Security.serializers import UserProfileSerializer
 from rest_framework.permissions import IsAuthenticated
 from Airport_Security.utils import generate_otp, Util
 from django.utils import timezone
 from datetime import timedelta
-from Airport_Security.serializers import OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer
-from django.urls import reverse
 from django.http import HttpResponseRedirect, JsonResponse
 import requests
 from django.http import StreamingHttpResponse
@@ -37,11 +34,13 @@ class UserRegistrationView(APIView):
 
     @role_required(['Admin']) 
     def post(self, request, format=None):
+   
         serializer = UserRegistrationSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
+        
         email = serializer.validated_data['email']
         
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email=email):
             return Response({"error": "User with the same user_id or email already exists."})
         
         user = serializer.save()
@@ -249,3 +248,23 @@ def open_camera(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
     
+
+
+class PassengerRegistrationView(APIView):
+        renderer_classes = [UserRenderer]
+        # permission_classes = [IsAuthenticated]
+
+        # @role_required(['Admin']) 
+        def post(self, request, *args, **kwargs):
+            email = request.data.get('email', None)
+            
+            
+            # Check if a Passenger with the provided email already exists
+            if  Passenger.objects.filter(email=email):
+                return Response({"detail": "Passenger with this email already registered."}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = PassengerSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
