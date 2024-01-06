@@ -28,7 +28,9 @@ class UserManager(BaseUserManager):
 
         user.set_password(password)
         user.save(using=self._db)
+        print(user)
         return user
+    
     
 class User(AbstractBaseUser):
     ADMIN = 'Admin'
@@ -49,7 +51,6 @@ class User(AbstractBaseUser):
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50)
     email = models.EmailField(
-      verbose_name='Email',
       max_length=255,
       unique=True,
     )
@@ -120,7 +121,6 @@ class Passenger(models.Model):
     )
 
     email = models.EmailField(
-      verbose_name='Email',
       max_length=255,
       unique=True,
     )
