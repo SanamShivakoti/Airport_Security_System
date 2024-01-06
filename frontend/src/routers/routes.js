@@ -21,7 +21,6 @@ function PrivateRoute({ element, authenticated, redirectTo }) {
 
 function Url() {
   const { isAuthenticated } = useSelector((state) => state.auth);
-  console.log("isAuthenticated", isAuthenticated);
 
   return (
     <BrowserRouter>
@@ -32,7 +31,7 @@ function Url() {
           element={
             <PrivateRoute
               element={<Login />}
-              authenticated={!isAuthenticated}
+              authenticated={!!isAuthenticated}
               redirectTo="/Admin/dashboard/"
             />
           }
