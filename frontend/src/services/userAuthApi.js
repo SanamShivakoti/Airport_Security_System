@@ -127,6 +127,18 @@ export const userAuthApi = createApi({
         };
       },
     }),
+    openCamera: builder.mutation({
+      query: () => {
+        return {
+          url: "open_camera/",
+          method: "GET",
+          headers: {
+            // authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
+          },
+        };
+      },
+    }),
   }),
 });
 
@@ -141,4 +153,5 @@ export const {
   useSendOTPMutation,
   useVerifyOTPMutation,
   useResetPasswordMutation,
+  useOpenCameraMutation,
 } = userAuthApi;
