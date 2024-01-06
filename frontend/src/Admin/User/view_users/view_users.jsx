@@ -7,6 +7,7 @@ import {
 import { getToken, removeToken } from "../../../services/LocalStorageService";
 import { removeUserToken } from "../../../features/authSlice";
 import { useNavigate } from "react-router-dom";
+import { useAdminProfileViewQuery } from "../../../services/userAuthApi";
 
 function ViewUsers() {
   const [userIdSearch, setUserIdSearch] = useState("");
@@ -15,6 +16,7 @@ function ViewUsers() {
   const { access_token } = getToken();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { data } = useAdminProfileViewQuery({ access_token });
 
   const {
     data: users = [],
@@ -30,8 +32,10 @@ function ViewUsers() {
   }, []);
 
   const filteredUsers = useMemo(() => {
-    return users.filter((user) =>
-      user.user_id.toLowerCase().includes(userIdSearch.toLowerCase())
+    return users.filter(
+      (user) =>
+        user.user_id.toLowerCase().includes(userIdSearch.toLowerCase()) &&
+        user.user_id !== data.user_id
     );
   }, [users, userIdSearch]);
 
