@@ -1,4 +1,18 @@
+import React, { useState, useEffect } from "react";
+import { useGetUsersQuery } from "../../../services/userAuthApi";
+import { getToken, removeToken } from "../../../services/LocalStorageService";
+
 function Content() {
+  const { access_token } = getToken();
+  const {
+    data: users = [],
+    error,
+    isLoading,
+    refetch,
+  } = useGetUsersQuery({
+    access_token,
+  });
+  const totalUsers = users.length;
   return (
     <div className="flex h-screen">
       {/* for Dashboard-contents */}
@@ -13,7 +27,7 @@ function Content() {
             <div className="laptop:text-4xl font-bold mx-4 my-4 px-4 py-4 tablet:text-3xl">
               Total Users
               <div className="laptop:text-3xl font-bold mx-4 my-4 px-4 tablet:text-2xl">
-                3
+                {totalUsers}
               </div>
             </div>
           </div>
