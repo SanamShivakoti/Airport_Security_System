@@ -10,6 +10,7 @@ import ViewStaffs from "../../Staffs/view_staffs";
 import OtpVerification from "../../Settings/Change_password";
 import NewPasswordForm from "../../Settings/Change_password/set_new_password";
 import EditUser from "../../User/edit_user";
+import Profile from "../../User/user_profile/user_profile";
 import { useAdminProfileViewQuery } from "../../../services/userAuthApi";
 import { getToken } from "../../../services/LocalStorageService";
 import "./sidebar.css";
@@ -29,13 +30,16 @@ function Sidebar() {
       setUserName(data);
     }
   }, [data]);
-  
+
   return (
     <div className="main-content">
       <div className="content">
         <div id="main-title">Airport Secuirty System</div>
         <div id="User-role-title">Admin</div>
-        <div className="profile">
+        <div
+          className="profile"
+          onClick={() => navigate("/Admin/profile/view")}
+        >
           {/* <Avatar src="./user.png" /> */}
           <img id="profile-image" alt="" src={img} />
           <div id="ProfileName">{`${userName.first_name} ${userName.middle_name} ${userName.last_name}`}</div>
@@ -89,6 +93,8 @@ function Sidebar() {
         <Route path="/User/View/details" element={<ViewUsers />} />
         {/* for Admin User Edit */}
         <Route path="User/View/details/Edit/:user_id" element={<EditUser />} />
+        {/*for Admin Profile View*/}
+        <Route path="/profile/view" element={<Profile />} />
       </Routes>
     </div>
   );
