@@ -17,6 +17,7 @@ def generate_user_id():
 
 class UserManager(BaseUserManager):
     def create_user(self, first_name, middle_name,  last_name, email, mobile_number, password=None, password2=None):
+        print("User manager called here")
         user = self.model(
             email=self.normalize_email(email),
             first_name=first_name,
@@ -62,6 +63,7 @@ class User(AbstractBaseUser):
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_timestamp = models.DateTimeField(null=True, blank=True)
     role = models.CharField(max_length=5, choices=ROLE_CHOICES, default=USER)
+    avatar = models.ImageField(upload_to='profile/', null=True, blank=True)
     status = models.CharField(max_length=8, choices=[('active', 'Active'), ('inactive', 'Inactive')], default='active')
     created_date = models.DateField(auto_now_add=True)
     created_time = models.TimeField(auto_now_add=True)
@@ -142,3 +144,20 @@ class Passenger(models.Model):
     arrival_date = models.DateField()
     arrival_time = models.DateTimeField()
     
+
+# Model for Notification
+class Notification(models.Model):
+    notification_id = models.AutoField(primary_key=True)
+    notification_name = models.CharField(max_length=255)
+    notification_description = models.TextField()
+    role = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.notification_name
+
+
+# Model for Acitivity
+class Activity(models.Model):
+    activity_id = models.AutoField(primary_key=True)
+    activity_description = models.TextField()
+    role = models.CharField(max_length=50)
