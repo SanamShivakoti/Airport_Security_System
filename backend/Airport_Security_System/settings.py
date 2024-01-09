@@ -33,6 +33,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,6 +45,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'Airport_Security',
     'rest_framework_simplejwt',
+    
+    
 ]
 
 MIDDLEWARE = [
@@ -61,7 +65,7 @@ ROOT_URLCONF = 'Airport_Security_System.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['Airport_Security/views'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -74,22 +78,34 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Airport_Security_System.wsgi.application'
+ASGI_APPLICATION = 'Airport_Security_System.asgi.application'
+# WSGI_APPLICATION = 'Airport_Security_System.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+       'default': {
+           'ENGINE': 'djongo',
+           'NAME': 'airport-security-system',
+           'CLIENT': {
+               'host' : 'mongodb+srv://sanam:ubuntu123@airportsecuritycluster.izyrew6.mongodb.net/'
+            }
+       }
+   }
 
 
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Password validation
@@ -144,11 +160,9 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASS')
 EMAIL_USE_TLS = True
 
 REST_FRAMEWORK = {
-    
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
-    
 }
 
 SIMPLE_JWT = {
@@ -175,3 +189,5 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+ALLOWED_HOSTS = ['*']
