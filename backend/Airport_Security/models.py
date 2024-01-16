@@ -14,22 +14,39 @@ def generate_user_id():
         # Check if the generated user_id already exists
         if not User.objects.filter(user_id=user_id).exists():
             return user_id
+        
+
+def generate_passenger_id():
+        random_number = ''.join(random.choices(string.digits, k=4))
+        # Add "P" as a prefix to the random number
+        # passenger_id = f'P{random_number}'
+
+        # return passenger_id
+
+        while True:
+            # Generate a 4-digit random number
+            random_number = ''.join(random.choices(string.digits, k=4))
+            # Add "P" as a prefix to the random number
+            passenger_id = f'P{random_number}'
+
+            #Check if the generated user_id already exists
+            if not Passenger.objects.filter(passenger_id=passenger_id).exists():
+                return passenger_id
+        
 
 class UserManager(BaseUserManager):
-    def create_user(self, first_name, middle_name,  last_name, email, mobile_number, password=None, password2=None):
-        print("User manager called here")
+    def create_user(self, first_name, middle_name,  last_name, email, mobile_number, role, password=None, password2=None):
         user = self.model(
             email=self.normalize_email(email),
             first_name=first_name,
             middle_name=middle_name,
             last_name=last_name,
             mobile_number=mobile_number,
-            # role=role
+            role=role
         )
 
         user.set_password(password)
         user.save(using=self._db)
-        print(user)
         return user
     
     
@@ -114,6 +131,7 @@ class Face(models.Model):
 
 # for passenger model
 class Passenger(models.Model):
+    passenger_id = models.CharField(max_length=5)
     first_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50)
@@ -138,12 +156,18 @@ class Passenger(models.Model):
     passport_number = models.CharField(max_length=50)
     flight_Destination_from = models.CharField(max_length=50)
     flight_Destination_to = models.CharField(max_length=50)
-    flight_Destination_Duration = models.DateTimeField()
     depature_date = models.DateField()
     depature_time = models.DateTimeField()
     arrival_date = models.DateField()
     arrival_time = models.DateTimeField()
-    
+
+    def __str__(self):
+        return self.passenger_id
+
+    def save(self, *args, **kwargs):
+        if not self.passenger_id:
+            self.passenger_id = generate_passenger_id()
+        super().save(*args, **kwargs)
 
 # Model for Notification
 class Notification(models.Model):
