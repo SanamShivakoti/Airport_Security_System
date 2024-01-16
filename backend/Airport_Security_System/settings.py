@@ -45,8 +45,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'Airport_Security',
     'rest_framework_simplejwt',
-    
-    
 ]
 
 MIDDLEWARE = [
@@ -97,6 +95,7 @@ DATABASES = {
        'default': {
            'ENGINE': 'djongo',
            'NAME': 'airport-security-system',
+           'ENFORCE_SCHEMA': False,
            'CLIENT': {
                'host' : 'mongodb+srv://sanam:ubuntu123@airportsecuritycluster.izyrew6.mongodb.net/'
             }
@@ -148,6 +147,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 AUTH_USER_MODEL = 'Airport_Security.User'
 
