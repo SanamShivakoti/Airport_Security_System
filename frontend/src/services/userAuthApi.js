@@ -76,6 +76,18 @@ export const userAuthApi = createApi({
         };
       },
     }),
+    updateUserProfile: builder.mutation({
+      query: ({ user_id, formData, access_token }) => {
+        return {
+          url: `user_update/profile/${user_id}/`,
+          method: "PATCH",
+          body: formData,
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
     updateUser: builder.mutation({
       query: ({ user_id, actualData, access_token }) => {
         return {
@@ -86,6 +98,8 @@ export const userAuthApi = createApi({
             authorization: `Bearer ${access_token}`,
             "Content-type": "application/json",
           },
+
+          formData: true,
         };
       },
     }),
@@ -130,11 +144,73 @@ export const userAuthApi = createApi({
     openCamera: builder.mutation({
       query: () => {
         return {
-          url: "open_camera/",
+          url: "passport_scan/",
           method: "GET",
           headers: {
             // authorization: `Bearer ${access_token}`,
             "Content-type": "application/json",
+          },
+        };
+      },
+    }),
+    registerPassenger: builder.mutation({
+      query: ({ actualData, access_token }) => {
+        return {
+          url: "register/passenger/",
+          method: "POST",
+          body: actualData,
+          headers: {
+            authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
+          },
+        };
+      },
+    }),
+    getPassengers: builder.query({
+      query: ({ access_token }) => {
+        return {
+          url: "passengers_list/",
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
+    filterPassengers: builder.query({
+      query: ({ passenger_id, access_token }) => {
+        return {
+          url: `passenger_filter/${passenger_id}/`,
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
+          },
+        };
+      },
+    }),
+    updatePassenger: builder.mutation({
+      query: ({ passenger_id, actualData, access_token }) => {
+        return {
+          url: `passenger_update/${passenger_id}/`,
+          method: "PATCH",
+          body: actualData,
+          headers: {
+            authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
+          },
+
+          formData: true,
+        };
+      },
+    }),
+    DeletePassenger: builder.mutation({
+      query: ({ passenger_id, access_token }) => {
+        return {
+          url: `passengers_delete/${passenger_id}/`,
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${access_token}`,
           },
         };
       },
@@ -154,4 +230,10 @@ export const {
   useVerifyOTPMutation,
   useResetPasswordMutation,
   useOpenCameraMutation,
+  useUpdateUserProfileMutation,
+  useRegisterPassengerMutation,
+  useGetPassengersQuery,
+  useFilterPassengersQuery,
+  useUpdatePassengerMutation,
+  useDeletePassengerMutation,
 } = userAuthApi;
