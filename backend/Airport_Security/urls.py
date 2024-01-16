@@ -1,5 +1,5 @@
 from django.urls import path
-from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView 
+from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView
 from .views import open_camera, flight_details_view
 
 urlpatterns = [
@@ -9,6 +9,7 @@ urlpatterns = [
     path('send_otp_email/', SendOtpResetEmailView.as_view(), name='send_otp_email'),
     path('otp_verification/', VerifyOtpView.as_view(), name='otp_verification'),
     path('users_list/', UserView.as_view(), name='users_list'),
+    path('user_update/profile/<str:user_id>/', UpdateUserProfileView.as_view(), name='user_update_profile'),
     path('user_update/<str:user_id>/', UpdateUserView.as_view(), name='user_update'),
     path('user_delete/<str:user_id>/', DeleteUserView.as_view(), name='user_delete'),
     path('user_filter/<str:user_id>/', FilterUserView.as_view(), name='user_filter'),
@@ -16,6 +17,10 @@ urlpatterns = [
     path('passport_scan/', open_camera, name='passport_scan'), # Route for open camera
     path('register/passenger/', PassengerRegistrationView.as_view(), name = 'register_passenger'),
     path('flight_details/', flight_details_view.as_view(), name='flight_details'),
-
+    path('passenger/<str:passport_number>/', PassengerDetailView.as_view(), name='passenger-detail'),
+    path('passengers_list/', PassengerView.as_view(), name='passengers_list'),
+    path('passengers_delete/<str:passenger_id>/', DeletePassengerView.as_view(), name='passengers_delete'),
+    path('passenger_filter/<str:passenger_id>/', FilterPassengerView.as_view(), name='passenger_filter'),
+    path('passenger_update/<str:passenger_id>/', UpdatePassengerView.as_view(), name='passenger_update'),
 
 ]

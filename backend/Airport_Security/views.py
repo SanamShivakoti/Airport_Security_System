@@ -4,10 +4,11 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from django.views import View
 from .models import User, Passenger
-from django.contrib.auth import authenticate 
-from Airport_Security.serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer
-from Airport_Security.renderers import UserRenderer
+from django.contrib.auth import authenticate
+from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer
+from .renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from Airport_Security.utils import generate_otp, Util
@@ -16,8 +17,11 @@ from datetime import timedelta
 from django.http import HttpResponseRedirect, JsonResponse
 import requests
 from django.http import StreamingHttpResponse
-from django.shortcuts import get_object_or_404
-import cv2
+from django.shortcuts import get_object_or_404, render
+import json
+import asyncio
+from rest_framework.parsers import MultiPartParser
+from rest_framework import generics
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -34,14 +38,13 @@ class UserRegistrationView(APIView):
 
     @role_required(['Admin']) 
     def post(self, request, format=None):
-   
+        email = request.data.get('email', None)
+
+        if  User.objects.filter(email=email):
+                return Response({"detail": "User with this email already registered."}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = UserRegistrationSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
-        
-        email = serializer.validated_data['email']
-        
-        if User.objects.filter(email=email):
-            return Response({"error": "User with the same user_id or email already exists."})
         
         user = serializer.save()
         token = get_tokens_for_user(user)
@@ -67,13 +70,15 @@ class LoginUserView(APIView):
 
 
 # User Profile View of Logined Users
-class AdminProfileView(APIView):
+class UserProfileView(APIView):
+  arser_classes = (MultiPartParser, )
   renderer_classes = [UserRenderer]
   permission_classes = [IsAuthenticated]
   
-  @role_required(['Admin']) 
+  @role_required(['Admin','User']) 
   def get(self, request, format=None):
     serializer = UserProfileSerializer(request.user)
+    
     return Response(serializer.data, status=status.HTTP_200_OK)
   
 
@@ -81,7 +86,7 @@ class AdminProfileView(APIView):
 class SendOtpResetEmailView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
-
+    @role_required(['Admin','User']) 
     def post(self, request, format=None):
             user = request.user
             otp = generate_otp()
@@ -107,6 +112,7 @@ class SendOtpResetEmailView(APIView):
 class VerifyOtpView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
+    @role_required(['Admin','User']) 
     def post(self, request, format=None):
         serializer = OTPVerificationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -131,6 +137,9 @@ class VerifyOtpView(APIView):
 
 # Password Reset View after OTP Verified
 class OTPVerifiedPasswordResetView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    @role_required(['Admin','User']) 
 
     def OTPVerifiedPasswordReset(self,request):
         user = request.user
@@ -166,19 +175,43 @@ class UserView(APIView):
     
 
 
-class UpdateUserView(APIView):
+class UpdateUserProfileView(APIView):
+    parser_classes = (MultiPartParser, )
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
     @role_required(['Admin'])
     def patch(self, request, user_id):
+        print(request.data)
         try:
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        if 'password' in request.data:
+        # if 'password' in request.data:
         
-            request.data['password'] = make_password(request.data['password'])
+        #     request.data['password'] = make_password(request.data['password'])
+
+        serializer = UpdateUserProfileSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'User updated successfully'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class UpdateUserView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    @role_required(['Admin'])
+    def patch(self, request, user_id):
+        print(request.data)
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # if 'password' in request.data:
+        
+        #     request.data['password'] = make_password(request.data['password'])
 
         serializer = UpdateUserSerializer(user, data=request.data)
         if serializer.is_valid():
@@ -221,9 +254,10 @@ class AdminChangePasswordView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
     
-    @role_required(['Admin'])
+    @role_required(['Admin','User'])
     def put(self, request):
         user = request.user
+        print(self.request.data)
         serializer = AdminChangePasswordSerializer(user, data=self.request.data)
         if serializer.is_valid():
             serializer.save()
@@ -231,30 +265,14 @@ class AdminChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-
-def open_camera(request):
-    raspberry_pi_url = 'http://192.168.25.25:8000/api/raspberrypi/start_camera/'
-
-    try:
-        response = requests.get(raspberry_pi_url)
-        data = response.json()
-
-        print(data)
-
-        if 'status' in data and data['status'] == 'success':
-            return JsonResponse({'status': 'success'})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Failed to open the camera on Raspberry Pi'})
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)})
     
 
-
+# For passenger registration view
 class PassengerRegistrationView(APIView):
         renderer_classes = [UserRenderer]
-        # permission_classes = [IsAuthenticated]
+        permission_classes = [IsAuthenticated]
 
-        # @role_required(['Admin']) 
+        @role_required(['Admin']) 
         def post(self, request, *args, **kwargs):
             email = request.data.get('email', None)
             
@@ -268,3 +286,98 @@ class PassengerRegistrationView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+# Display the passenger flight details template view
+class flight_details_view(View):
+    template_name ='passenger_view.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+# Display the passenger flight details 
+class PassengerDetailView(generics.RetrieveAPIView):
+    serializer_class = PassengerDetailsSerializer
+
+    def get_object(self):
+        passport_number = self.kwargs.get('passport_number')
+        try:
+            passenger = Passenger.objects.get(passport_number=passport_number)
+            return passenger
+        except Passenger.DoesNotExist:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        passenger = self.get_object()
+        if passenger:
+            serializer = self.get_serializer(passenger)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'Passenger not Found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+# List of Passengers View to Read all Users    
+class PassengerView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    @role_required(['Admin', 'User']) 
+    def get(self, request):
+        passengers = Passenger.objects.all()
+        serializer = PassengerGetSerializer(passengers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+# Delete passenger view
+class DeletePassengerView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    @role_required(['Admin','User'])
+    def delete(self, request, passenger_id):
+       
+        try:
+            passenger = get_object_or_404(Passenger, passenger_id=passenger_id)
+            passenger.delete()
+            return Response({'msg': 'Passenger deleted successfully'}, status=status.HTTP_200_OK)
+        except Passenger.DoesNotExist:
+            return Response({'error': 'Passenger not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+# Update Passenger view
+class UpdatePassengerView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    @role_required(['Admin','User'])
+    def patch(self, request, passenger_id):
+
+        try:
+            passenger = Passenger.objects.get(passenger_id=passenger_id)
+        except Passenger.DoesNotExist:
+            return Response({'error': 'Passenger not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+        serializer = UpdatePassengerSerializer(passenger, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'Passenger updated successfully'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# filter Passenger view
+class FilterPassengerView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    @role_required(['Admin','User'])
+    def get(self,request, passenger_id):
+
+        try:
+            passenger = Passenger.objects.get(passenger_id=passenger_id)
+
+            serializer = FilterPassengerSerializer(passenger, many=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Passenger.DoesNotExist:
+            return Response({'error': 'Passenger not found'}, status=status.HTTP_404_NOT_FOUND)

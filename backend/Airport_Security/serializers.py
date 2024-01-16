@@ -35,7 +35,7 @@ class LoginUserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
-    fields = ['user_id', 'first_name','middle_name','last_name','mobile_number','role','email']
+    fields = ['user_id', 'first_name','middle_name','last_name','mobile_number','role','email','avatar']
 
 
 class OTPVerificationSerializer(serializers.Serializer):
@@ -51,10 +51,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+class UpdateUserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [ 'first_name','middle_name','last_name','mobile_number','role','email','status','avatar']
+
+
 class UpdateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = [ 'first_name','middle_name','last_name','mobile_number','role','email','status']
 
 class FilterUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -87,9 +93,33 @@ class AdminChangePasswordSerializer(serializers.ModelSerializer):
     def create(self, validate_data):
         return User.objects.create_user(**validate_data)
     
-    # Passengers Serializers
+
+# Passengers Serializers
 
 class PassengerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passenger
+        exclude = ('passenger_id', )
+
+
+class PassengerDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passenger
+        fields = '__all__'
+
+
+class PassengerGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passenger
+        fields = '__all__'
+
+
+class UpdatePassengerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Passenger
+        exclude = ('passenger_id', )
+
+class FilterPassengerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Passenger
         fields = '__all__'
