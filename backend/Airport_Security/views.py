@@ -5,9 +5,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.views import View
-from .models import User, Passenger
+from .models import User, Passenger, Staff
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer
+from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer
 from .renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -20,7 +20,7 @@ from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, render
 import json
 import asyncio
-from rest_framework.parsers import MultiPartParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import generics
 
 # Generate Token Manually
@@ -317,7 +317,7 @@ class PassengerDetailView(generics.RetrieveAPIView):
         
 
 
-# List of Passengers View to Read all Users    
+# List of Passengers View to Read    
 class PassengerView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
@@ -381,3 +381,97 @@ class FilterPassengerView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Passenger.DoesNotExist:
             return Response({'error': 'Passenger not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class StaffRegistrationView(APIView):
+    renderer_classes = [UserRenderer]
+    # permission_classes = [IsAuthenticated]
+
+    # @role_required(['Admin'])
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email', None)
+        face_id = request.data.get('face_id', None)
+        if Staff.objects.filter(email=email):
+            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if Staff.objects.filter(face_id=face_id):
+            return Response({'error': 'Face ID already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = StaffRegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+class StaffView(APIView):
+    renderer_classes = [UserRenderer]
+    # permission_classes = [IsAuthenticated]
+
+    # @role_required(['Admin']) 
+    def get(self, request):
+        staffs = Staff.objects.all()
+        serializer = StaffGetSerializer(staffs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+
+# Delete staff view
+class DeleteStaffView(APIView):
+    renderer_classes = [UserRenderer]
+    # permission_classes = [IsAuthenticated]
+
+    # @role_required(['Admin'])
+    def delete(self, request, staff_id):
+       
+        try:
+            staff = get_object_or_404(Staff, staff_id=staff_id)
+            staff.delete()
+            return Response({'msg': 'staff deleted successfully'}, status=status.HTTP_200_OK)
+        except Staff.DoesNotExist:
+            return Response({'error': 'staff not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+
+# filter Passenger view
+class FilterStaffView(APIView):
+    renderer_classes = [UserRenderer]
+    # permission_classes = [IsAuthenticated]
+
+    # @role_required(['Admin'])
+    def get(self,request, staff_id):
+
+        try:
+            staff = Staff.objects.get(staff_id=staff_id)
+
+            serializer = FilterStaffSerializer(staff, many=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Passenger.DoesNotExist:
+            return Response({'error': 'Staff not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+
+# Update Staff view
+class UpdateStaffView(APIView):
+    renderer_classes = [UserRenderer]
+    # permission_classes = [IsAuthenticated]
+    # @role_required(['Admin'])
+    def patch(self, request, staff_id):
+
+        try:
+            staff = Staff.objects.get(staff_id=staff_id)
+        except Staff.DoesNotExist:
+            return Response({'error': 'Staff not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+        serializer = UpdateStaffSerializer(staff, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'Staff updated successfully'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
