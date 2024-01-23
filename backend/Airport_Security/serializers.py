@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import User, Passenger   
+from .models import User, Passenger, Staff 
 from django.contrib.auth.hashers import make_password
+from drf_extra_fields.fields import Base64ImageField
 
 # serializer for User Registration
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -123,3 +124,35 @@ class FilterPassengerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Passenger
         fields = '__all__'
+
+
+
+# Staff Serializer
+
+class StaffRegisterSerializer(serializers.ModelSerializer):
+    # faces = Base64ImageField()
+    class Meta:
+        model = Staff
+        fields = ['first_name','middle_name','last_name','email','mobile_number','address','department','face_id','faces']
+
+
+
+
+class StaffGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Staff
+        fields = '__all__'
+
+
+
+class FilterStaffSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Staff
+        fields = '__all__'
+
+
+class UpdateStaffSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Staff
+        exclude = ('staff_id', )
+        
