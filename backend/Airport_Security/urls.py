@@ -1,6 +1,6 @@
 from django.urls import path
-from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView
-from .views import open_camera, flight_details_view
+from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView
+from .views import flight_details_view
 
 urlpatterns = [
     path('register/user/', UserRegistrationView.as_view(), name = 'register'),
@@ -14,7 +14,6 @@ urlpatterns = [
     path('user_delete/<str:user_id>/', DeleteUserView.as_view(), name='user_delete'),
     path('user_filter/<str:user_id>/', FilterUserView.as_view(), name='user_filter'),
     path('change_password/', AdminChangePasswordView.as_view(), name='change_password'),
-    path('passport_scan/', open_camera, name='passport_scan'), # Route for open camera
     path('register/passenger/', PassengerRegistrationView.as_view(), name = 'register_passenger'),
     path('flight_details/', flight_details_view.as_view(), name='flight_details'),
     path('passenger/<str:passport_number>/', PassengerDetailView.as_view(), name='passenger-detail'),
@@ -22,5 +21,10 @@ urlpatterns = [
     path('passengers_delete/<str:passenger_id>/', DeletePassengerView.as_view(), name='passengers_delete'),
     path('passenger_filter/<str:passenger_id>/', FilterPassengerView.as_view(), name='passenger_filter'),
     path('passenger_update/<str:passenger_id>/', UpdatePassengerView.as_view(), name='passenger_update'),
+    path('register/Staff/', StaffRegistrationView.as_view(), name='staff_register'),
+    path('staffs_list/', StaffView.as_view(), name='staffs_list'),
+    path('staffs_delete/<str:staff_id>', DeleteStaffView.as_view(), name='staffs_delete'),
+    path('staffs_filter/<str:staff_id>', FilterStaffView.as_view(), name ='staffs_filter'),
+    path('staffs_update/<str:staff_id>', UpdateStaffView.as_view(), name='staffs_update'),
 
 ]
