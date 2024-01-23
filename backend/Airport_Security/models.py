@@ -18,10 +18,6 @@ def generate_user_id():
 
 def generate_passenger_id():
         random_number = ''.join(random.choices(string.digits, k=4))
-        # Add "P" as a prefix to the random number
-        # passenger_id = f'P{random_number}'
-
-        # return passenger_id
 
         while True:
             # Generate a 4-digit random number
@@ -32,6 +28,17 @@ def generate_passenger_id():
             #Check if the generated user_id already exists
             if not Passenger.objects.filter(passenger_id=passenger_id).exists():
                 return passenger_id
+            
+
+def generate_staff_id():
+    while True:
+        random_number = ''.join(random.choices(string.digits, k=4))
+       
+        staff_id = f'S{random_number}'
+
+        # Check if the generated user_id already exists
+        if not Staff.objects.filter(staff_id=staff_id).exists():
+            return staff_id
         
 
 class UserManager(BaseUserManager):
@@ -101,7 +108,8 @@ class User(AbstractBaseUser):
 
 
 # for staff model
-class Staff(models.Model):
+class Staff(models.Model): 
+    staff_id = models.CharField(max_length=5)
     first_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50)
@@ -122,12 +130,16 @@ class Staff(models.Model):
     
     address = models.CharField(max_length=50, blank=True, null=True)
     department = models.CharField(max_length=50)
-    face_id = models.ForeignKey('Face', on_delete=models.CASCADE)
+    face_id = models.CharField(max_length=6)
+    faces = models.ImageField(upload_to='face_images/', null=True)
 
-# for face model
-class Face(models.Model):
-    face_id = models.CharField(max_length=6, primary_key=True, unique=True)
-    faces = models.ImageField(upload_to='face_images/')
+    def __str__(self):
+        return self.staff_id
+
+    def save(self, *args, **kwargs):
+        if not self.staff_id:
+            self.staff_id = generate_staff_id()
+        super().save(*args, **kwargs)
 
 # for passenger model
 class Passenger(models.Model):
