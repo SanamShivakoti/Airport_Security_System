@@ -272,7 +272,7 @@ class PassengerRegistrationView(APIView):
         renderer_classes = [UserRenderer]
         permission_classes = [IsAuthenticated]
 
-        @role_required(['Admin']) 
+        @role_required(['Admin', 'User']) 
         def post(self, request, *args, **kwargs):
             email = request.data.get('email', None)
             
@@ -458,6 +458,7 @@ class FilterStaffView(APIView):
 
 # Update Staff view
 class UpdateStaffView(APIView):
+    # parser_classes = (MultiPartParser, )
     renderer_classes = [UserRenderer]
     # permission_classes = [IsAuthenticated]
     # @role_required(['Admin'])
