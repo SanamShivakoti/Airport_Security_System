@@ -130,7 +130,7 @@ class FilterPassengerSerializer(serializers.ModelSerializer):
 # Staff Serializer
 
 class StaffRegisterSerializer(serializers.ModelSerializer):
-    # faces = Base64ImageField()
+    faces = Base64ImageField()
     class Meta:
         model = Staff
         fields = ['first_name','middle_name','last_name','email','mobile_number','address','department','face_id','faces']
@@ -154,5 +154,5 @@ class FilterStaffSerializer(serializers.ModelSerializer):
 class UpdateStaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
-        exclude = ('staff_id', )
+        exclude = ('staff_id','face_id','faces' )
         
