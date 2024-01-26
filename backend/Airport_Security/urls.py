@@ -23,8 +23,8 @@ urlpatterns = [
     path('passenger_update/<str:passenger_id>/', UpdatePassengerView.as_view(), name='passenger_update'),
     path('register/Staff/', StaffRegistrationView.as_view(), name='staff_register'),
     path('staffs_list/', StaffView.as_view(), name='staffs_list'),
-    path('staffs_delete/<str:staff_id>', DeleteStaffView.as_view(), name='staffs_delete'),
-    path('staffs_filter/<str:staff_id>', FilterStaffView.as_view(), name ='staffs_filter'),
-    path('staffs_update/<str:staff_id>', UpdateStaffView.as_view(), name='staffs_update'),
+    path('staffs_delete/<str:staff_id>/', DeleteStaffView.as_view(), name='staffs_delete'),
+    path('staffs_filter/<str:staff_id>/', FilterStaffView.as_view(), name ='staffs_filter'),
+    path('staffs_update/<str:staff_id>/', UpdateStaffView.as_view(), name='staffs_update'),
 
 ]
