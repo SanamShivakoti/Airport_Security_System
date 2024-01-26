@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import UserRegistration from "../../User";
 import StaffsRegistration from "../../Staffs";
 import PassengersRegistration from "../../Passengers";
+import EditPassengers from "../../Passengers/edit_passenger/edit_passenger";
 import Settings from "../../Settings";
 import ViewUsers from "../../User/view_users";
 import ViewPassengers from "../../Passengers/view_passengers";
 import ViewStaffs from "../../Staffs/view_staffs";
+import EditStaffs from "../../Staffs/edit_staffs";
 import OtpVerification from "../../Settings/Change_password";
 import NewPasswordForm from "../../Settings/Change_password/set_new_password";
 import EditUser from "../../User/edit_user";
@@ -18,16 +20,19 @@ import Content from "../Contents";
 import { SidebarData } from "./Sidebardata";
 
 // import Avatar from "react-avatar";
+import React from "react";
 import img from "./user.png";
 function Sidebar() {
   const navigate = useNavigate();
   const { access_token } = getToken();
   const [userName, setUserName] = useState({});
+  const [image, setImage] = useState();
   const { data } = useAdminProfileViewQuery({ access_token });
 
   useEffect(() => {
     if (data) {
       setUserName(data);
+      setImage(data.avatar);
     }
   }, [data]);
 
@@ -41,7 +46,16 @@ function Sidebar() {
           onClick={() => navigate("/Admin/profile/view")}
         >
           {/* <Avatar src="./user.png" /> */}
-          <img id="profile-image" alt="" src={img} />
+          {/* <img id="profile-image" alt="" src={img} /> */}
+          {image ? (
+            <img
+              id="profile-image"
+              src={`http://localhost:8000${image}`}
+              alt=""
+            />
+          ) : (
+            <img id="profile-image" src={img} alt="" />
+          )}
           <div id="ProfileName">{`${userName.first_name} ${userName.middle_name} ${userName.last_name}`}</div>
           <hr />
         </div>
@@ -75,6 +89,11 @@ function Sidebar() {
 
         {/* for Admin Staffs view details */}
         <Route path="/Staff/View/details" element={<ViewStaffs />} />
+        <Route
+          path="/Staff/View/details/Edit/:staff_id"
+          element={<EditStaffs />}
+        />
+
         {/**Admin Passengers Registration route */}
         <Route
           path="/Passenger/Registration"
@@ -83,6 +102,10 @@ function Sidebar() {
 
         {/* for Admin Passengers view details */}
         <Route path="/Passenger/View/details" element={<ViewPassengers />} />
+        <Route
+          path="Passenger/View/details/Edit/:passenger_id"
+          element={<EditPassengers />}
+        />
         {/**Admin Setting route */}
         <Route path="/Settings/" element={<Settings />} />
         {/* for Admin OTP verifaction */}
