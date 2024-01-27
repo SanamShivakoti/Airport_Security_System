@@ -1,3 +1,3 @@
-import ViewPassengers from "./ViewPassengers";
+import UserViewPassengers from "./ViewPassengers";
 
-export default ViewPassengers;
+export default UserViewPassengers;
