@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useGetUsersQuery } from "../../../services/userAuthApi";
+import {
+  useGetUsersQuery,
+  useGetStaffsQuery,
+} from "../../../services/userAuthApi";
 import { getToken, removeToken } from "../../../services/LocalStorageService";
 
 function Content() {
@@ -12,7 +15,11 @@ function Content() {
   } = useGetUsersQuery({
     access_token,
   });
+  const { data: staffs = [] } = useGetStaffsQuery({
+    access_token,
+  });
   const totalUsers = users.length;
+  const totalStaffs = staffs.length;
   return (
     <div className="flex h-screen">
       {/* for Dashboard-contents */}
@@ -36,7 +43,7 @@ function Content() {
             <div className="laptop:text-4xl font-bold mx-4 my-4 px-4 py-4 tablet:text-3xl">
               Total Staffs
               <div className="laptop:text-3xl font-bold mx-4 my-4 px-4 tablet:text-2xl">
-                10
+                {totalStaffs}
               </div>
             </div>
           </div>
