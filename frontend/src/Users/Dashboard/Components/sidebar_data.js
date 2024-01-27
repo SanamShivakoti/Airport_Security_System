@@ -1,8 +1,8 @@
-// import react from "react";
+import React from "react";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";
-import ViewListIcon from '@mui/icons-material/ViewList';
-import SettingsIcon from '@mui/icons-material/Settings';
+import ViewListIcon from "@mui/icons-material/ViewList";
+import SettingsIcon from "@mui/icons-material/Settings";
 export const sidebar_data = [
   {
     title: "Dashboard",
@@ -24,5 +24,4 @@ export const sidebar_data = [
     icon: <SettingsIcon />,
     link: "/User/Settings",
   },
-
 ];
