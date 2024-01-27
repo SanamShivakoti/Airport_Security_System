@@ -155,4 +155,10 @@ class UpdateStaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         exclude = ('staff_id','face_id','faces' )
+
+
+class StaffDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Staff
+        fields = '__all__'
         
