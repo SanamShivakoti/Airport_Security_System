@@ -3,6 +3,9 @@ import { Alert, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useResetPasswordMutation } from "../../../services/userAuthApi";
 import { getToken, removeToken } from "../../../services/LocalStorageService";
+import { useDispatch } from "react-redux";
+import { removeUserToken } from "../../../features/authSlice";
+
 function NewPasswordForm() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -11,8 +14,10 @@ function NewPasswordForm() {
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const { access_token } = getToken();
   const [ResetPassword] = useResetPasswordMutation();
+  const dispatch = useDispatch();
   const formRef = useRef();
   const navigate = useNavigate();
+
   const handleNewPasswordChange = (e) => {
     setNewPassword(e.target.value);
   };
@@ -24,6 +29,7 @@ function NewPasswordForm() {
   useEffect(() => {
     if (passwordChanged) {
       const timer = setTimeout(() => {
+        dispatch(removeUserToken());
         removeToken();
         navigate("/");
         window.location.reload();
