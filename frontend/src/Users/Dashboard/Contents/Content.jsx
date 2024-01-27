@@ -1,4 +1,15 @@
+import React from "react";
+import { useGetPassengersQuery } from "../../../services/userAuthApi";
+import { getToken } from "../../../services/LocalStorageService";
 function Content() {
+  const { access_token } = getToken();
+  const {
+    data: passengers = [],
+    error,
+    isloading,
+  } = useGetPassengersQuery({ access_token });
+
+  const totalpassengers = passengers.length;
   return (
     <div className="flex h-screen">
       {/* for Dashboard-contents */}
@@ -12,7 +23,9 @@ function Content() {
           <div className="flex-1  mx-20 my-10 h-auto border-2 border-black rounded bg-zinc-300 shadow-lg tablet:mx-10">
             <div className="text-3xl font-bold mx-4 my-4 px-4 py-4 ">
               Total Passengers
-              <div className="text-2xl font-bold mx-4 my-4 px-4 ">3</div>
+              <div className="text-2xl font-bold mx-4 my-4 px-4 ">
+                {totalpassengers}
+              </div>
             </div>
           </div>
         </div>
