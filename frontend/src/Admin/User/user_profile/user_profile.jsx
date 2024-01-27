@@ -1,14 +1,18 @@
 import React, { useRef, useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { useAdminProfileViewQuery } from "../../../services/userAuthApi";
 import { getToken, removeToken } from "../../../services/LocalStorageService";
 import img from "./user.png";
 import { useHistory } from "react-router-dom";
+import { removeUserToken } from "../../../features/authSlice";
+import { useDispatch } from "react-redux";
 
 function Profile() {
   const inputRef = useRef(null);
   const [server_error, setServerError] = useState({});
   const formRef = useRef();
+  const dispatch = useDispatch();
 
   const [image, setImage] = useState("");
   const { access_token } = getToken();
@@ -21,8 +25,7 @@ function Profile() {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    console.log(file);
-    setImage(event.target.files[0]);
+    setImage(file);
   };
 
   const [userData, setUserData] = useState({
@@ -31,8 +34,7 @@ function Profile() {
     last_name: "",
     email: "",
     mobile_number: "",
-    password: "",
-    confirm_password: "",
+    avatar: data?.avatar || null,
   });
 
   useEffect(() => {
@@ -44,8 +46,7 @@ function Profile() {
         last_name: data.last_name || "",
         email: data.email || "",
         mobile_number: data.mobile_number || "",
-        password: "",
-        confirm_password: "",
+        avatar: data.avatar || "",
       });
     }
   }, [data]);
@@ -68,6 +69,7 @@ function Profile() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    dispatch(removeUserToken());
     removeToken();
     navigate("/");
   };
@@ -78,8 +80,8 @@ function Profile() {
       <div className="flex flex-col items-center ">
         <div onClick={handleImageClick}>
           <div className="w-32 h-32 rounded-full  overflow-hidden">
-            {image ? (
-              <img src={URL.createObjectURL(image)} alt="" />
+            {userData.avatar ? (
+              <img src={`http://localhost:8000${userData.avatar}`} alt="" />
             ) : (
               <img src={img} alt="" />
             )}
