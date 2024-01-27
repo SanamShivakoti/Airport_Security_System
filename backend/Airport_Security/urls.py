@@ -1,5 +1,5 @@
 from django.urls import path
-from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView
+from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView, StaffDetailView
 from .views import flight_details_view
 
 urlpatterns = [
@@ -26,5 +26,6 @@ urlpatterns = [
     path('staffs_delete/<str:staff_id>/', DeleteStaffView.as_view(), name='staffs_delete'),
     path('staffs_filter/<str:staff_id>/', FilterStaffView.as_view(), name ='staffs_filter'),
     path('staffs_update/<str:staff_id>/', UpdateStaffView.as_view(), name='staffs_update'),
+    path('staff/<str:face_id>/', StaffDetailView.as_view(), name='staff-detail'),
 
 ]
