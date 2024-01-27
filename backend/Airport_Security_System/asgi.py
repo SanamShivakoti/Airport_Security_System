@@ -16,12 +16,13 @@ django.setup()
 from django.urls import path
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
-from Airport_Security.consumers import PracticeConsumer, CameraTest
+from Airport_Security.consumers import PracticeConsumer, CameraTest, FaceDetectionConsumer
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": URLRouter([
             path('practice', PracticeConsumer.as_asgi()),
-            path('camera/open', CameraTest.as_asgi())
+            path('camera/open', CameraTest.as_asgi()),
+            path('face/detection', FaceDetectionConsumer.as_asgi()),
         ])
 })
