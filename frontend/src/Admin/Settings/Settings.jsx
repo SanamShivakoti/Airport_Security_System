@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   useAdminProfileViewQuery,
-  useUpdateUserMutation,
+  useUpdateUserProfileMutation,
 } from "../../services/userAuthApi";
 import { getToken, storeToken } from "../../services/LocalStorageService";
 import img from "./user.png";
@@ -11,8 +11,9 @@ function Settings() {
   const inputRef = useRef(null);
   const [server_error, setServerError] = useState({});
   const formRef = useRef();
-  const [updateUser] = useUpdateUserMutation();
+  const [updateUser] = useUpdateUserProfileMutation();
   const [image, setImage] = useState("");
+  const [profileImageUrl, setProfileImageUrl] = useState("");
   const { access_token } = getToken();
   const { data, refetch, isLoading, isError } = useAdminProfileViewQuery({
     access_token,
@@ -23,8 +24,14 @@ function Settings() {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    console.log(file);
-    setImage(event.target.files[0]);
+    setImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImageUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const [userData, setUserData] = useState({
@@ -33,8 +40,7 @@ function Settings() {
     last_name: "",
     email: "",
     mobile_number: "",
-    password: "",
-    confirm_password: "",
+    avatar: data?.avatar || null,
   });
 
   useEffect(() => {
@@ -46,28 +52,31 @@ function Settings() {
         last_name: data.last_name || "",
         email: data.email || "",
         mobile_number: data.mobile_number || "",
-        password: "",
-        confirm_password: "",
+        avatar: data.avatar || "",
       });
+      setProfileImageUrl(`http://localhost:8000${data.avatar}`);
     }
   }, [data]);
 
   const { user_id } = data || {};
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = new FormData(formRef.current);
+    const formData = new FormData(formRef.current);
+    if (image) {
+      console.log("lkjsfjsdklf");
+      formData.append("avatar", image);
+    }
+
     const actualData = {
-      first_name: data.get("first_name"),
-      middle_name: data.get("middle_name"),
-      last_name: data.get("last_name"),
-      email: data.get("email"),
-      mobile_number: data.get("mobile_number"),
-      password: "",
-      password2: "",
-      user_id,
+      first_name: formData.get("first_name"),
+      middle_name: formData.get("middle_name"),
+      last_name: formData.get("last_name"),
+      email: formData.get("email"),
+      mobile_number: formData.get("mobile_number"),
+      avatar: formData.avatar,
     };
 
-    const res = await updateUser({ user_id, actualData, access_token });
+    const res = await updateUser({ user_id, formData, access_token });
 
     if (res.error) {
       console.log(res.error.data.errors);
@@ -89,11 +98,12 @@ function Settings() {
         <p className="pb-2 text-2xl">Edit Profile</p>
         <div onClick={handleImageClick}>
           <div className="w-32 h-32 rounded-full  overflow-hidden">
-            {image ? (
-              <img src={URL.createObjectURL(image)} alt="" />
+            {/* {userData.avatar || image ? (
+              <img src={`http://localhost:8000${userData.avatar}`} alt="" />
             ) : (
-              <img src={img} alt="" />
-            )}
+              <img src={userData.avatar} alt="" />
+            )} */}
+            <img src={profileImageUrl} alt="" />
 
             <input
               type="file"
