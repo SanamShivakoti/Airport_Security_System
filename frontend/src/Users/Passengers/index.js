@@ -1,3 +1,3 @@
-import PassengerRegistration from "./Passengers_Registration";
+import PassengersRegistration from "./Passengers_Registration";
 
-export default PassengerRegistration;
+export default PassengersRegistration;
