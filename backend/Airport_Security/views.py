@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from django.views import View
 from .models import User, Passenger, Staff
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer
+from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer, StaffDetailsSerializer
 from .renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -475,4 +475,25 @@ class UpdateStaffView(APIView):
             serializer.save()
             return Response({'msg': 'Staff updated successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+# Display the passenger flight details 
+class StaffDetailView(generics.RetrieveAPIView):
+    serializer_class = StaffDetailsSerializer
+
+    def get_object(self):
+        face_id = self.kwargs.get('face_id')
+        try:
+            staff = Staff.objects.get(face_id=face_id)
+            return staff
+        except Staff.DoesNotExist:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        staff = self.get_object()
+        if staff:
+            serializer = self.get_serializer(staff)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': 'Unauthorized'}, status=status.HTTP_404_NOT_FOUND)
         
