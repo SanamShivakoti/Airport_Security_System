@@ -1,3 +1,4 @@
+import React from "react";
 import { useParams } from "react-router-dom";
 import { Typography } from "@mui/material";
 import { useState, useEffect } from "react";
@@ -25,9 +26,9 @@ function EditUser() {
     last_name: "",
     email: "",
     mobile_number: "",
-    password: "",
+    role: "",
+    status: "",
   });
-
 
   useEffect(() => {
     refetch();
@@ -39,7 +40,8 @@ function EditUser() {
         last_name: data.last_name || "",
         email: data.email || "",
         mobile_number: data.mobile_number || "",
-        password: data.password || "",
+        role: data.role || "",
+        status: data.status || "",
       }));
     }
   }, [data]);
@@ -53,7 +55,8 @@ function EditUser() {
       last_name: data.get("last_name"),
       email: data.get("email"),
       mobile_number: data.get("mobile_number"),
-      password: data.get("password"),
+      role: data.get("role"),
+      status: data.get("status"),
       user_id,
     };
 
@@ -197,24 +200,49 @@ function EditUser() {
 
             <div className="mt-4">
               <label
-                htmlFor="password"
+                htmlFor="role"
                 className="block ml-1 text-sm text-left font-medium leading-6 text-gray-900"
               >
-                Password
+                Role
               </label>
 
-              <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="Password"
-                autoComplete="given-name"
-                value={userData.password}
-                onChange={(e) =>
-                  setUserData({ ...userData, password: e.target.value })
-                }
-                className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
+              <div>
+                <select
+                  id="role"
+                  name="role"
+                  value={userData.role}
+                  onChange={(e) =>
+                    setUserData({ ...userData, role: e.target.value })
+                  }
+                  className="block  my-px px-2 w-full bg-white h-9 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                >
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label
+                htmlFor="status"
+                className="block ml-1 text-sm text-left font-medium leading-6 text-gray-900"
+              >
+                Status
+              </label>
+              <div>
+                <select
+                  id="status"
+                  name="status"
+                  value={userData.status}
+                  onChange={(e) =>
+                    setUserData({ ...userData, status: e.target.value })
+                  }
+                  className="block  my-px px-2 w-full bg-white h-9 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
             </div>
           </div>
 
