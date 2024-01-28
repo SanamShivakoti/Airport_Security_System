@@ -215,6 +215,65 @@ export const userAuthApi = createApi({
         };
       },
     }),
+    registerStaff: builder.mutation({
+      query: ({ data, access_token }) => {
+        return {
+          url: `register/Staff/`,
+          method: "POST",
+          body: data,
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
+    getStaffs: builder.query({
+      query: ({ access_token }) => {
+        return {
+          url: "staffs_list/",
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
+    DeleteStaff: builder.mutation({
+      query: ({ staff_id, access_token }) => {
+        return {
+          url: `staffs_delete/${staff_id}/`,
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
+    filterStaffs: builder.query({
+      query: ({ staff_id, access_token }) => {
+        return {
+          url: `staffs_filter/${staff_id}/`,
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
+          },
+        };
+      },
+    }),
+    updateStaff: builder.mutation({
+      query: ({ staff_id, actualData, access_token }) => {
+        return {
+          url: `staffs_update/${staff_id}/`,
+          method: "PATCH",
+          body: actualData,
+          headers: {
+            authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
+          },
+        };
+      },
+    }),
   }),
 });
 
@@ -236,4 +295,9 @@ export const {
   useFilterPassengersQuery,
   useUpdatePassengerMutation,
   useDeletePassengerMutation,
+  useRegisterStaffMutation,
+  useGetStaffsQuery,
+  useDeleteStaffMutation,
+  useFilterStaffsQuery,
+  useUpdateStaffMutation,
 } = userAuthApi;
