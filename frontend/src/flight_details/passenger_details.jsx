@@ -46,7 +46,7 @@ const PassengerDetails = () => {
   const ws = useRef(null);
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://127.0.0.1:8000/practice");
+    ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
 
     ws.current.onopen = () => {
       console.log("Web Socket Opened");
@@ -56,10 +56,10 @@ const PassengerDetails = () => {
       // Handle incoming messages from the server
       console.log("Received message:", event.data);
 
-      const receivedPassportNumber = event.data;
-      if (receivedPassportNumber === "PONG") {
-        console.log("message receiveed Pong");
-        const newpassportNumber = "12345679";
+      const data = JSON.parse(event.data);
+      const receivedPassportNumber = data.type;
+      if (receivedPassportNumber === "passportNumber") {
+        const newpassportNumber = data.id_number;
         setPassportNumber(newpassportNumber);
       }
     };
@@ -230,7 +230,7 @@ const PassengerDetails = () => {
 
   const handlePassportScan = async () => {
     // Send a message to the WebSocket server (Raspberry Pi)
-    sendMessage("PING");
+    sendMessage("passportscan");
   };
 
   return (
