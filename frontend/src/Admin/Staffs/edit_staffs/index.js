@@ -1,3 +1,3 @@
-import editStaffs from "./edit_staff";
+import EditStaffs from "./edit_staff";
 
-export default editStaffs;
+export default EditStaffs;
