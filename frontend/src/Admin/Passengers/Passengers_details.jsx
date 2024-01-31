@@ -354,7 +354,7 @@ function PassengersRegistration() {
 
           <p className="desktop:mt-10 laptop:mt-14 tablet:mt-14 flex text-base  laptop:px-32 desktop:px-40  tablet:px-24">
             Note: Passenger ID will be auto generate by system. It will be a
-            alphanumeric value of six characters.
+            alphanumeric value of five characters.
           </p>
 
           <div className="desktop:mt-7 laptop:mt-14 tablet:mt-14 flex items-center justify-end gap-x-6 laptop:px-32 desktop:px-40  tablet:px-24">
