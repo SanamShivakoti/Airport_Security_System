@@ -228,7 +228,7 @@ function UserRegistration() {
 
           <p className="desktop:mt-24 laptop:mt-14 tablet:mt-14 flex text-base  laptop:px-40 desktop:px-52  tablet:px-32">
             Note: User ID will be auto generate by system. It will be a
-            alphanumeric value of six characters.
+            alphanumeric value of five characters.
           </p>
 
           <div className="desktop:mt-24 laptop:mt-14 tablet:mt-14 flex items-center justify-end gap-x-6 laptop:px-40 desktop:px-52  tablet:px-32">
