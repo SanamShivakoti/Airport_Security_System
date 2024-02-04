@@ -17,3 +17,46 @@ class Util:
             to=[data['to_email']]
         )
         email.send()
+
+
+    @staticmethod
+    def create_email_message(data, attachment=None):
+        try:
+            subject = data['subject']
+            body = data['body']
+            to_email = data['to_email']
+
+            # Create EmailMessage instance
+            email = EmailMessage(
+                subject=subject,
+                body=body,
+                from_email=os.environ.get('EMAIL_FROM'),
+                to=[to_email],
+            )
+
+            # Set content subtype to HTML
+            email.content_subtype = 'html'
+
+            # Attach the image if provided
+            if attachment:
+                email.attach(attachment['filename'], attachment['content'], attachment['mimetype'])
+
+            return email
+        except Exception as e:
+            print(f"Error creating email message: {e}")
+            return None
+
+    @staticmethod
+    def send_email_admin(data, attachment=None):
+        email = Util.create_email_message(data, attachment)
+
+        if email:
+            # Send the email
+            try:
+                email.send()
+                print(f"Email sent to {data['to_email']}")
+                return email
+            except Exception as e:
+                print(f"Error sending email: {e}")
+
+        return None
