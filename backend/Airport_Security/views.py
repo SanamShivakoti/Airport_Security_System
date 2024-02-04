@@ -22,6 +22,9 @@ import json
 import asyncio
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import generics
+from django.core.files.base import ContentFile
+import base64
+from io import BytesIO
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -497,3 +500,46 @@ class StaffDetailView(generics.RetrieveAPIView):
         else:
             return Response({'detail': 'Unauthorized'}, status=status.HTTP_404_NOT_FOUND)
         
+
+
+# Send mail of unknown face to Admin
+class SendMailToAdminView(APIView):
+    def post(self, request):
+        admin_users = User.objects.filter(role='Admin')
+
+        if admin_users.count() > 0:
+            admin_user = admin_users.first()
+            admin_email = admin_user.email
+
+            base64_image_data = request.data.get('imageData', '')
+
+            # Extract base64 part from Data URL
+            _, base64_image = base64_image_data.split(',')
+
+            # Convert base64 to BytesIO
+            test_image_bytes = base64.b64decode(base64_image)
+            test_image_io = BytesIO(test_image_bytes)
+
+            # Send email using Util class
+            email_data = {
+                'subject': 'Test Email with Image',
+                'body': 'This is a test email with an image. See attached image.',
+                'to_email': admin_email,
+            }
+
+            attachment = {
+                    'filename': 'test_image.jpg',
+                    'content': test_image_io.read(),
+                    'mimetype': 'image/jpeg',
+            }
+
+            # Create EmailMessage instance
+            Util.send_email_admin(email_data, attachment)
+
+
+
+            print(f"Test Email sent to {admin_email}")
+            return Response({'success': 'Admin found'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'No admin found'}, status=status.HTTP_404_NOT_FOUND)
+
