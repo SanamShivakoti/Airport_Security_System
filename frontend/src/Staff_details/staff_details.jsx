@@ -3,6 +3,7 @@ import { Alert } from "@mui/material";
 
 const StaffDetails = () => {
   const [imageUrl, setImageUrl] = useState("");
+  const [unkownFace, setUnknownFace] = useState("");
   const [faceId, setFaceID] = useState("");
   const [unknownMessage, setUnknownMessage] = useState("");
   const [firstName, setFirstName] = useState("N/A");
@@ -24,7 +25,7 @@ const StaffDetails = () => {
 
     ws.current.onmessage = (event) => {
       // Handle incoming messages from the server
-      console.log("Received message:", event.data);
+      // console.log("Received message:", event.data);
 
       const data = JSON.parse(event.data);
       const resultType = data.result_type;
@@ -35,7 +36,10 @@ const StaffDetails = () => {
       } else if (resultType === "Unknown") {
         const unknownMessage = "Unauthorized";
         setUnknownMessage(unknownMessage);
+        const unknown_face = data.unknown_face_base64;
+        const dataUrl = `data:image/jpeg;base64,${unknown_face}`;
 
+        setUnknownFace(dataUrl);
         setTimeout(() => {
           setUnknownMessage(null);
         }, 1 * 60 * 1000);
@@ -101,6 +105,33 @@ const StaffDetails = () => {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (unkownFace) {
+      notifyData();
+      console.log(unkownFace);
+    }
+  }, [unkownFace]);
+
+  const notifyData = async () => {
+    const formData = new FormData();
+    formData.append("imageData", unkownFace);
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/admin/send_unknown_face/`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!res.ok) {
+      } else {
+      }
+    } catch (error) {
+      console.error("Error on sending notification:", error);
     }
   };
 
