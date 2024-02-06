@@ -89,3 +89,10 @@ button:hover {
   top: 23px;
   right: 32px;
 }
+
+
+.forgot-password-link:hover {
+  cursor: pointer;
+  color: #007bff; 
+  text-decoration: underline;
+}
