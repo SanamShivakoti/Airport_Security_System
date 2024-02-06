@@ -9,6 +9,8 @@ import { Login } from "../login";
 import { UserLogin } from "../Users/login/login";
 import { useSelector } from "react-redux/es/hooks/useSelector";
 import PassengerDetails from "../flight_details";
+import PasswordResetPage from "../Admin/forget_password/forget_passord";
+import UserPasswordResetPage from "../Users/forget_password/forget_password_user";
 import StaffsDetails from "../Staff_details/staff_details";
 function PrivateRoute({ element, authenticated, redirectTo }) {
   return authenticated ? (
@@ -23,7 +25,9 @@ function PrivateRoute({ element, authenticated, redirectTo }) {
 }
 
 function Url() {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, role } = useSelector((state) => state.auth);
+  console.log("authenticated", isAuthenticated);
+  console.log("role", role);
 
   return (
     <BrowserRouter>
@@ -54,17 +58,25 @@ function Url() {
 
         <Route
           path="/User/login/"
-          element={<UserLogin />}
-          authenticated={!isAuthenticated}
-          redirectTo="/User/dashboard/"
+          element={
+            <PrivateRoute
+              element={<UserLogin />}
+              authenticated={!isAuthenticated}
+              redirectTo="/User/dashboard/"
+            />
+          }
         />
 
         {/* Users controls route */}
         <Route
           path="/User/*"
-          element={<Usersidebar />}
-          authenticated={!!isAuthenticated}
-          redirectTo="/User/login/"
+          element={
+            <PrivateRoute
+              element={<Usersidebar />}
+              authenticated={!!isAuthenticated}
+              redirectTo="/User/login/"
+            />
+          }
         />
 
         <Route
@@ -73,6 +85,14 @@ function Url() {
         />
 
         <Route path="/staff/details/" element={<StaffsDetails />} />
+        <Route
+          path="/Admin/forget/password/reset/"
+          element={<PasswordResetPage />}
+        />
+        <Route
+          path="/User/forget/password/reset/"
+          element={<UserPasswordResetPage />}
+        />
       </Routes>
     </BrowserRouter>
   );
