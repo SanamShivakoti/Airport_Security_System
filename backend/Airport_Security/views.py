@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from django.views import View
 from .models import User, Passenger, Staff
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer, StaffDetailsSerializer
+from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer, StaffDetailsSerializer, ForgetPasswordSerializer
 from .renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -388,9 +388,9 @@ class FilterPassengerView(APIView):
 
 class StaffRegistrationView(APIView):
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    # @role_required(['Admin'])
+    @role_required(['Admin'])
     def post(self, request, *args, **kwargs):
         email = request.data.get('email', None)
         face_id = request.data.get('face_id', None)
@@ -411,9 +411,9 @@ class StaffRegistrationView(APIView):
 
 class StaffView(APIView):
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    # @role_required(['Admin']) 
+    @role_required(['Admin']) 
     def get(self, request):
         staffs = Staff.objects.all()
         serializer = StaffGetSerializer(staffs, many=True)
@@ -425,9 +425,9 @@ class StaffView(APIView):
 # Delete staff view
 class DeleteStaffView(APIView):
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    # @role_required(['Admin'])
+    @role_required(['Admin'])
     def delete(self, request, staff_id):
        
         try:
@@ -443,9 +443,9 @@ class DeleteStaffView(APIView):
 # filter Passenger view
 class FilterStaffView(APIView):
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
-    # @role_required(['Admin'])
+    @role_required(['Admin'])
     def get(self,request, staff_id):
 
         try:
@@ -463,8 +463,8 @@ class FilterStaffView(APIView):
 class UpdateStaffView(APIView):
     # parser_classes = (MultiPartParser, )
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
-    # @role_required(['Admin'])
+    permission_classes = [IsAuthenticated]
+    @role_required(['Admin'])
     def patch(self, request, staff_id):
 
         try:
@@ -542,4 +542,136 @@ class SendMailToAdminView(APIView):
             return Response({'success': 'Admin found'}, status=status.HTTP_200_OK)
         else:
             return Response({'message': 'No admin found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+
+# Send OTP via mail for forget password
+class SendOtpForgetEmailView(APIView):
+    renderer_classes = [UserRenderer]
+
+    def post(self, request, format=None):
+        email = request.data.get('email')
+
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+        if user.role != 'Admin':
+            return Response({'error': 'Permission denied. Your not Admin'}, status=status.HTTP_403_FORBIDDEN)
+
+        otp = generate_otp()
+        user.otp = otp
+        user.otp_timestamp = timezone.now()
+        user.save()
+
+        subject = 'Password Reset OTP'
+        message = f'Your OTP is: {otp}'
+        to_email = user.email
+
+        email_data = {
+            'subject': subject,
+            'body': message,
+            'to_email': to_email,
+        }
+
+        Util.send_email(email_data)
+
+        return Response({'msg': 'OTP sent via email','type':'success', 'user_id': user.user_id}, status=status.HTTP_200_OK)
+    
+
+
+
+# Verify OTP View for forget password
+class VerifyOtpForgetView(APIView):
+    renderer_classes = [UserRenderer]
+
+    def post(self, request, format=None):
+        serializer = ForgetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_id = serializer.validated_data['user_id']
+        otp = serializer.validated_data['otp']
+
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.otp == otp:
+            time_limit = timedelta(minutes=1)  
+            if user.otp_timestamp and timezone.now() - user.otp_timestamp < time_limit:
+                user.otp = None
+                user.otp_timestamp = None
+                user.save()
+
+                return Response({'msg': 'OTP Verified', 'type':'success', 'user_id': user.user_id}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'OTP has expired. Please,re-enter your email.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'Incorrect OTP. Please try again.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+# Password Reset by using forget password
+class ForgetChangePasswordView(APIView):
+    renderer_classes = [UserRenderer]
+
+    def put(self, request, user_id):
+        try:
+            user_change_password = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AdminChangePasswordSerializer(user_change_password, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'msg': 'Password changed successfully'}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+# Send OTP via mail to User for forget password reset process
+class SendOtpForgetUserEmailView(APIView):
+    renderer_classes = [UserRenderer]
+
+    def post(self, request, format=None):
+        email = request.data.get('email')
+
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+        if user.role != 'User':
+            return Response({'error': 'Permission denied. Your not User'}, status=status.HTTP_403_FORBIDDEN)
+
+        otp = generate_otp()
+        user.otp = otp
+        user.otp_timestamp = timezone.now()
+        user.save()
+
+        subject = 'Password Reset OTP'
+        message = f'Your OTP is: {otp}'
+        to_email = user.email
+
+        email_data = {
+            'subject': subject,
+            'body': message,
+            'to_email': to_email,
+        }
+
+        Util.send_email(email_data)
+
+        return Response({'msg': 'OTP sent via email','type':'success', 'user_id': user.user_id}, status=status.HTTP_200_OK)
 
