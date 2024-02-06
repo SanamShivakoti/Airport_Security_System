@@ -161,4 +161,9 @@ class StaffDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = '__all__'
+
+
+class ForgetPasswordSerializer(serializers.Serializer):
+    otp = serializers.CharField(max_length=6)
+    user_id = serializers.CharField()
         
