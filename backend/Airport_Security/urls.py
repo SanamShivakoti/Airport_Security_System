@@ -1,5 +1,5 @@
 from django.urls import path
-from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView, StaffDetailView, SendMailToAdminView
+from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView, StaffDetailView, SendMailToAdminView, SendOtpForgetEmailView, VerifyOtpForgetView, ForgetChangePasswordView, SendOtpForgetUserEmailView
 from .views import flight_details_view
 
 urlpatterns = [
@@ -27,6 +27,10 @@ urlpatterns = [
     path('staffs_filter/<str:staff_id>/', FilterStaffView.as_view(), name ='staffs_filter'),
     path('staffs_update/<str:staff_id>/', UpdateStaffView.as_view(), name='staffs_update'),
     path('staff/<str:face_id>/', StaffDetailView.as_view(), name='staff-detail'),
-    path('send_unknown_face/', SendMailToAdminView.as_view(), name='send_unknown_face')
+    path('send_unknown_face/', SendMailToAdminView.as_view(), name='send_unknown_face'),
+    path('send_otp_email/forget/password/', SendOtpForgetEmailView.as_view(), name="send_otp_email_forget_password"),
+    path('otp_verification/forget/password/', VerifyOtpForgetView.as_view(), name='otp_verification_forget_password'),
+    path('change_password/forget/password/<str:user_id>/', ForgetChangePasswordView.as_view(), name='change_password_forget_password'),
+    path('send_otp_email/User/forget/password/', SendOtpForgetUserEmailView.as_view(), name='send_otp_email_User_forget_password'),
 
 ]
