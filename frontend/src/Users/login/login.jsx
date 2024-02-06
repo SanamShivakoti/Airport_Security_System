@@ -24,6 +24,9 @@ export const UserLogin = () => {
   const [loginUser, { isLoading }] = useLoginUserMutation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const handleForgotPassword = () => {
+    navigate("/User/forget/password/reset/");
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData(formRef.current);
@@ -46,7 +49,11 @@ export const UserLogin = () => {
         storeToken(res.data.token);
         let { access_token } = getToken();
         dispatch(
-          setUserToken({ access_token: access_token, isAuthenticated: true })
+          setUserToken({
+            access_token: access_token,
+            isAuthenticated: true,
+            role: "User",
+          })
         );
         navigate("/User/dashboard");
       } else {
@@ -113,7 +120,13 @@ export const UserLogin = () => {
               )}
             </div>
           </div>
-          <p id="forgotpassword">Forgot Password?</p>
+          <p
+            id="forgotpassword"
+            onClick={handleForgotPassword}
+            className="forgot-password-link"
+          >
+            Forgot Password?
+          </p>
           {isLoading ? (
             <CircularProgress />
           ) : (
