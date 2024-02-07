@@ -260,7 +260,6 @@ class AdminChangePasswordView(APIView):
     @role_required(['Admin','User'])
     def put(self, request):
         user = request.user
-        print(self.request.data)
         serializer = AdminChangePasswordSerializer(user, data=self.request.data)
         if serializer.is_valid():
             serializer.save()
