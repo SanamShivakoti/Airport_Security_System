@@ -1,126 +1,207 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { CircularProgress, Typography, TextField, Button } from "@mui/material";
 import {
   useSendOTPMutation,
   useVerifyOTPMutation,
+  useResetPasswordMutation,
 } from "../../../services/userAuthApi";
-import { getToken } from "../../../services/LocalStorageService";
-import { CircularProgress } from "@mui/material";
-function OtpVerification() {
-  const [otp, setOtp] = useState("");
-  const [verificationStatus, setVerificationStatus] = useState("");
-  const [loading, setLoading] = useState();
-  const [otpSent, setOtpSent] = useState(false); // Track whether OTP has been sent
+import { getToken, removeToken } from "../../../services/LocalStorageService";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { removeUserToken } from "../../../features/authSlice";
+
+function PasswordResetPage() {
   const navigate = useNavigate();
+  const [otp, setOtp] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [verificationStep, setVerificationStep] = useState(1);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const { access_token } = getToken();
+  const dispatch = useDispatch();
 
-  const [sendotp, res] = useSendOTPMutation();
-  const [verify, data] = useVerifyOTPMutation();
-  const otpSend = async (access_token) => {
-    try {
-      const response = await sendotp({ access_token });
+  const [sendOTP] = useSendOTPMutation();
+  const [verifyOTP] = useVerifyOTPMutation();
+  const [resetPassword] = useResetPasswordMutation();
 
-      setOtpSent(true);
-      setVerificationStatus("OTP of 6 digits has been sent to your email.");
-    } catch (error) {}
-  };
-  const handleOtpChange = (e) => {
-    setOtp(e.target.value);
-  };
+  useEffect(() => {
+    const confirmationMessage = "Are you sure you want to leave this page?";
 
-  const handleVerify = async (access_token) => {
-    try {
-      const response = await verify({ access_token, otp: otp });
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = confirmationMessage;
+      return confirmationMessage;
+    };
 
-      // const message = response.data.error;
+    window.onbeforeunload = handleBeforeUnload;
 
-      if (response.error) {
-        if (response.error.status === 400) {
-          const otp_error = response.error.data.error;
-          setVerificationStatus(otp_error);
-        }
-      } else {
-        setVerificationStatus("Verified!");
-        navigate("/User/Settings/set/newpassword");
-      }
-    } catch (error) {
-      // Handle unexpected errors
-      console.error(error);
-      setVerificationStatus("Unexpected error. Please try again.");
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
+
+  const handleSendOTP = async () => {
+    setLoading(true);
+    setErrorMessage("");
+    const response = await sendOTP({ access_token });
+
+    if (response.data.msg === "OTP sent via email") {
+      setSuccessMessage(response.data.msg);
+      setVerificationStep(2);
+    } else {
+      setErrorMessage("Failed to send OTP");
     }
+
+    setLoading(false);
   };
 
-  const handleResendOtp = async (access_token, res) => {
-    try {
-      const response = await sendotp({ access_token });
+  const handleVerifyOTP = async () => {
+    setLoading(true);
+    setOtp("");
+    setErrorMessage("");
+    setSuccessMessage("");
+    const response = await verifyOTP({ access_token, otp });
 
-      setOtpSent(true);
-      setVerificationStatus("OTP of 6 digits has been sent to your email.");
-    } catch (error) {}
+    if (response.error && response.error.status === 400) {
+      if (response.error.data.error === "OTP has expired") {
+        setErrorMessage(response.error.data.error);
+        setTimeout(() => {
+          setVerificationStep(1);
+          setErrorMessage("");
+          setSuccessMessage("Click to resend the OTP");
+        }, 2000);
+      } else {
+        setErrorMessage(response.error.data.error);
+      }
+    } else {
+      setSuccessMessage("OTP verified successfully");
+      setVerificationStep(3);
+    }
+
+    setLoading(false);
+  };
+
+  const handleResetPassword = async () => {
+    setLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+    if (newPassword !== confirmPassword) {
+      setErrorMessage("Password and Confirm Password don't match");
+      setLoading(false);
+      return;
+    }
+    const response = await resetPassword({
+      access_token,
+      actualData: { password: newPassword, password2: confirmPassword },
+    });
+    if (response.data.msg === "Password Reset successfully") {
+      setNewPassword("");
+      setConfirmPassword("");
+      setSuccessMessage(response.data.msg);
+      setTimeout(() => {
+        dispatch(removeUserToken());
+        removeToken();
+        navigate("/User/login/");
+      }, 3000);
+    } else {
+      setErrorMessage("Failed to reset password");
+    }
+
+    setLoading(false);
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-semibold text-center my-4">
-        OTP Verification
-      </h1>
-      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            {otpSent
-              ? "Please enter the OTP sent to your email"
-              : "Click the button to receive the OTP via email"}
-          </label>
-          {otpSent ? (
-            <>
-              <input
-                type="text"
-                placeholder="Enter OTP"
-                name="otp"
-                value={otp}
-                onChange={handleOtpChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:ring-2 focus:ring-inset focus:ring-indigo-600"
-              />
-              <p
-                className="text-center text-blue-600 cursor-pointer underline mt-2"
-                onClick={() => {
-                  handleResendOtp(access_token, res);
-                }}
+    <div className="min-h-screen flex items-center justify-center bg-gray-300 py-6 px-4 sm:px-6 lg:px-8">
+      <div
+        className="max-w-md w-full space-y-8 bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+        style={{ marginBottom: "50px" }}
+      >
+        <Typography variant="h4" align="center" gutterBottom>
+          Password Reset
+        </Typography>
+        <div>
+          {verificationStep === 1 && (
+            <div>
+              <Typography variant="h5">Receive OTP</Typography>
+              <Button
+                onClick={handleSendOTP}
+                disabled={loading}
+                variant="contained"
+                color="primary"
               >
-                Resend OTP
-              </p>
-            </>
-          ) : (
-            <button
-              onClick={() => {
-                otpSend(access_token);
-              }}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              Receive OTP
-            </button>
+                Receive OTP
+              </Button>
+            </div>
+          )}
+          {verificationStep === 2 && (
+            <div>
+              <Typography variant="h5">Verify OTP</Typography>
+              <TextField
+                label="Enter OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+              />
+              <Button
+                onClick={handleVerifyOTP}
+                disabled={loading}
+                variant="contained"
+                color="primary"
+              >
+                Verify OTP
+              </Button>
+            </div>
+          )}
+          {verificationStep === 3 && (
+            <div>
+              <Typography variant="h5">Reset Password</Typography>
+              <TextField
+                label="New Password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Confirm Password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+              />
+              <Button
+                onClick={handleResetPassword}
+                disabled={loading}
+                variant="contained"
+                color="primary"
+              >
+                Reset Password
+              </Button>
+            </div>
+          )}
+          {loading && <CircularProgress />}
+          {errorMessage && (
+            <Typography variant="subtitle1" style={{ color: "red" }}>
+              {errorMessage}
+            </Typography>
+          )}
+          {successMessage && (
+            <Typography variant="subtitle1" style={{ color: "gray" }}>
+              {successMessage}
+            </Typography>
           )}
         </div>
-        {verificationStatus && (
-          <div className="text-center">
-            <button
-              onClick={() => {
-                handleVerify(access_token);
-              }}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              Verify
-            </button>
-          </div>
-        )}
-        {verificationStatus && (
-          <p className="mt-4 text-center text-red-600">
-            {loading ? <CircularProgress /> : verificationStatus}
-          </p>
-        )}
       </div>
     </div>
   );
 }
 
-export default OtpVerification;
+export default PasswordResetPage;
