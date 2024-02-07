@@ -10,7 +10,6 @@ import ViewPassengers from "../../Passengers/view_passengers";
 import ViewStaffs from "../../Staffs/view_staffs";
 import EditStaffs from "../../Staffs/edit_staffs";
 import OtpVerification from "../../Settings/Change_password";
-import NewPasswordForm from "../../Settings/Change_password/set_new_password";
 import EditUser from "../../User/edit_user";
 import Profile from "../../User/user_profile/user_profile";
 import { useAdminProfileViewQuery } from "../../../services/userAuthApi";
@@ -109,9 +108,8 @@ function Sidebar() {
         {/**Admin Setting route */}
         <Route path="/Settings/" element={<Settings />} />
         {/* for Admin OTP verifaction */}
-        <Route path="/Settings/verify/Otp" element={<OtpVerification />} />
-        {/* for Admin set new password */}
-        <Route path="/settings/set/newpassword" element={<NewPasswordForm />} />
+        <Route path="/Settings/change/password" element={<OtpVerification />} />
+
         {/* for Amdin User view details */}
         <Route path="/User/View/details" element={<ViewUsers />} />
         {/* for Admin User Edit */}
