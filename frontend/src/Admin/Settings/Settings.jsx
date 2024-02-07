@@ -231,7 +231,7 @@ function Settings() {
           <div className="desktop:mt-24 laptop:mt-14 tablet:mt-14 flex items-center justify-end gap-x-6 laptop:px-40 desktop:px-52  tablet:px-32">
             <button
               type="button"
-              onClick={() => navigate("/Admin/Settings/verify/Otp/")}
+              onClick={() => navigate("/Admin/Settings/change/password/")}
               className="rounded-md bg-indigo-600 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             >
               Change Password
