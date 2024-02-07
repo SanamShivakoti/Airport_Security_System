@@ -6,7 +6,6 @@ import UserViewPassengers from "../../View_passengers";
 import UserEditPassengers from "../../edit_passenger/user_edit_passenger";
 import UserSettings from "../../Settings";
 import OtpVerification from "../../Settings/change_password";
-import UserNewPasswordForm from "../../Settings/change_password/set_new_password";
 import UserProfile from "../../user_profile/user_profile";
 import "./sidebar.css";
 import Content from "../Contents";
@@ -48,9 +47,7 @@ function Usersidebar() {
               <li
                 key={key}
                 className={`row ${isActive ? "active" : ""}`}
-                onClick={() => {
-                  window.location.pathname = val.link;
-                }}
+                onClick={() => navigate(val.link)}
               >
                 {/**Display the icons and the name of the corresponding icons as title */}
                 <div id="icon">{val.icon}</div>
@@ -81,13 +78,7 @@ function Usersidebar() {
         <Route path="/Settings" element={<UserSettings />} />
 
         {/* User verify OTP for password change */}
-        <Route path="/Settings/verify/Otp" element={<OtpVerification />} />
-
-        {/* User set new password form */}
-        <Route
-          path="/Settings/set/newpassword"
-          element={<UserNewPasswordForm />}
-        />
+        <Route path="/Settings/change/password" element={<OtpVerification />} />
 
         <Route path="/profile/view" element={<UserProfile />} />
       </Routes>
