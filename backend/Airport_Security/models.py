@@ -3,6 +3,7 @@ import random
 import string
 from django.contrib.auth.models import BaseUserManager,AbstractBaseUser
 from django.core.validators import RegexValidator
+from django.utils import timezone
 
 def generate_user_id():
     while True:
@@ -187,6 +188,8 @@ class Notification(models.Model):
     notification_name = models.CharField(max_length=255)
     notification_description = models.TextField()
     role = models.CharField(max_length=50)
+    created_at = models.DateTimeField(default=timezone.now)
+    checked = models.BooleanField(default=False)
 
     def __str__(self):
         return self.notification_name
