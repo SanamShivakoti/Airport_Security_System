@@ -25,6 +25,8 @@ from rest_framework import generics
 from django.core.files.base import ContentFile
 import base64
 from io import BytesIO
+import os
+from django.conf import settings
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -431,6 +433,11 @@ class DeleteStaffView(APIView):
        
         try:
             staff = get_object_or_404(Staff, staff_id=staff_id)
+            staff = get_object_or_404(Staff, staff_id=staff_id)
+            face_id = staff.face_id
+            binary_file_path = os.path.join(os.path.abspath("./face_dataset/"), F"{face_id}.npy")
+            if os.path.exists(binary_file_path):
+                os.remove(binary_file_path)
             staff.delete()
             return Response({'msg': 'staff deleted successfully'}, status=status.HTTP_200_OK)
         except Staff.DoesNotExist:
