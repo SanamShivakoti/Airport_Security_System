@@ -274,6 +274,40 @@ export const userAuthApi = createApi({
         };
       },
     }),
+    getAdminNotifications: builder.query({
+      query: ({ access_token }) => {
+        return {
+          url: "get/notification/",
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
+    updateNotifications: builder.mutation({
+      query: ({ notification_id, access_token }) => {
+        return {
+          url: `update/notification/${notification_id}/`,
+          method: "PUT",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
+          },
+        };
+      },
+    }),
+    getUserNotifications: builder.query({
+      query: ({ access_token }) => {
+        return {
+          url: "get/user/notification/",
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
   }),
 });
 
@@ -300,4 +334,7 @@ export const {
   useDeleteStaffMutation,
   useFilterStaffsQuery,
   useUpdateStaffMutation,
+  useGetAdminNotificationsQuery,
+  useUpdateNotificationsMutation,
+  useGetUserNotificationsQuery,
 } = userAuthApi;
