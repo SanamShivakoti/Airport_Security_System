@@ -47,6 +47,7 @@ const PassengerDetails = () => {
 
   useEffect(() => {
     ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
+    // ws.current = new WebSocket("ws://127.0.0.1:8000/practice");
 
     ws.current.onopen = () => {
       console.log("Web Socket Opened");
@@ -167,19 +168,18 @@ const PassengerDetails = () => {
             } else if (timeDiffInHours <= 2 && timeDiffInHours > 0) {
               // Entry allowed
               setIsEntryAllowed(true);
-            } else if (timeDiffInHours <= 0) {
-              setDialogMessage(
-                "Your flight has already been missed. Please contact the concerned authority for reschedule."
-              );
-              setShowDialog(true);
-
-              // Automatically close the dialog after the specified duration
-              setTimeout(() => {
-                setShowDialog(false);
-              }, dialogVisibilityDuration);
             }
           } else {
             // Departure time has already passed
+            setDialogMessage(
+              "Your flight has already been missed. Please contact the concerned authority for reschedule."
+            );
+            setShowDialog(true);
+
+            // Automatically close the dialog after the specified duration
+            setTimeout(() => {
+              setShowDialog(false);
+            }, dialogVisibilityDuration);
             setIsEntryAllowed(false);
           }
         } else {
@@ -366,7 +366,7 @@ const PassengerDetails = () => {
           {result ? (
             isDepartureToday ? (
               isEntryAllowed ? (
-                <p className="text-green-500 text-center">Go</p>
+                <p className="text-green-500 text-center">Proceed Further</p>
               ) : (
                 <p className="text-red-500 text-center">
                   Remaining Time: {remainingTime} hrs
