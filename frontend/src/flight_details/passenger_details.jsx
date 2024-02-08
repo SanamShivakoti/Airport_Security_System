@@ -97,7 +97,7 @@ const PassengerDetails = () => {
         const serverError = await res.json();
         console.error("Error in response:", serverError.detail);
         setError(serverError.detail);
-
+        sendNotification();
         setTimeout(() => {
           setError(null);
         }, 1 * 60 * 1000);
@@ -216,6 +216,36 @@ const PassengerDetails = () => {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+    }
+  };
+
+  const sendNotification = async () => {
+    try {
+      // Make an API call to send a notification
+      const notificationRes = await fetch(
+        "http://127.0.0.1:8000/api/admin/notification/send/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            notification_name: "Passenger Not Found",
+            notification_description: `Passenger with passport number ${passportNumber} not found.`,
+            checked: "false",
+            role: "User",
+          }),
+        }
+      );
+
+      if (notificationRes.ok) {
+        console.log("Notification sent successfully");
+      } else {
+        const notificationError = await notificationRes.json();
+        console.error("Error sending notification:", notificationError.detail);
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error);
     }
   };
 
