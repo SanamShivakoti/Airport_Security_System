@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Passenger, Staff 
+from .models import User, Passenger, Staff, Notification
 from django.contrib.auth.hashers import make_password
 from drf_extra_fields.fields import Base64ImageField
 
@@ -166,4 +166,16 @@ class StaffDetailsSerializer(serializers.ModelSerializer):
 class ForgetPasswordSerializer(serializers.Serializer):
     otp = serializers.CharField(max_length=6)
     user_id = serializers.CharField()
+
+
+
+class AdminNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
+
+class UserNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
         
