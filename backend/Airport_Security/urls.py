@@ -1,5 +1,5 @@
 from django.urls import path
-from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView, StaffDetailView, SendMailToAdminView, SendOtpForgetEmailView, VerifyOtpForgetView, ForgetChangePasswordView, SendOtpForgetUserEmailView
+from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView, StaffDetailView, SendMailToAdminView, SendOtpForgetEmailView, VerifyOtpForgetView, ForgetChangePasswordView, SendOtpForgetUserEmailView,SendNotificationView,AdminNotificationView,UserNotificationView,UpdateNotificationCheckedAPIView
 from .views import flight_details_view
 
 urlpatterns = [
@@ -32,5 +32,9 @@ urlpatterns = [
     path('otp_verification/forget/password/', VerifyOtpForgetView.as_view(), name='otp_verification_forget_password'),
     path('change_password/forget/password/<str:user_id>/', ForgetChangePasswordView.as_view(), name='change_password_forget_password'),
     path('send_otp_email/User/forget/password/', SendOtpForgetUserEmailView.as_view(), name='send_otp_email_User_forget_password'),
+    path('notification/send/', SendNotificationView.as_view(), name='send-notification'),
+    path('get/notification/', AdminNotificationView.as_view(), name='get-notification'),
+    path('get/user/notification/', UserNotificationView.as_view(), name='get-user-notification'),
+    path('update/notification/<int:notification_id>/',UpdateNotificationCheckedAPIView.as_view(), name='update-notifications'),
 
 ]
