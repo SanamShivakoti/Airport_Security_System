@@ -1,5 +1,9 @@
-import React from "react";
-import { useGetPassengersQuery } from "../../../services/userAuthApi";
+import React, { useState, useEffect } from "react";
+import {
+  useGetPassengersQuery,
+  useGetUserNotificationsQuery,
+  useUpdateNotificationsMutation,
+} from "../../../services/userAuthApi";
 import { getToken } from "../../../services/LocalStorageService";
 function Content() {
   const { access_token } = getToken();
@@ -10,6 +14,96 @@ function Content() {
   } = useGetPassengersQuery({ access_token });
 
   const totalpassengers = passengers.length;
+
+  const { data: notifications = [], refetch } = useGetUserNotificationsQuery({
+    access_token,
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 60000); // Refetch every 1 minute
+
+    return () => clearInterval(interval);
+  }, []);
+  const [loading, setLoading] = useState(false);
+  const [handleUpdateNotificatios] = useUpdateNotificationsMutation();
+  const renderNotifications = () => {
+    const handleClickNotification = async (notification_id, access_token) => {
+      console.log("Clicked");
+      try {
+        setLoading(true);
+        // Call the API function to update notification status
+        const response = await handleUpdateNotificatios({
+          notification_id,
+          access_token,
+        });
+        refetch();
+      } catch (error) {
+        console.error("Error updating notification:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Sort notifications array based on the checked status
+    const sortedNotifications = [...notifications].sort((a, b) => {
+      if (a.checked === b.checked) {
+        return 0;
+      }
+      // Move unchecked notifications (checked: false) to the top
+      return a.checked ? 1 : -1;
+    });
+
+    return (
+      <div
+        className="notifications-container"
+        style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}
+      >
+        {sortedNotifications.map((notification, index) => {
+          const isNewNotification = !notification.checked;
+          const notificationStyle = isNewNotification
+            ? { color: "red", fontWeight: "normal" }
+            : { color: "black", fontWeight: "normal" };
+
+          return (
+            <div
+              key={index}
+              className={`desktop:mx-1 my-1 desktop:py-2 laptop:mx-2 my-2 laptop:py-4 text-left tablet:py-1 tablet:mx-1 hover:bg-gray-200 group`}
+              onClick={() =>
+                handleClickNotification(
+                  notification.notification_id,
+                  access_token
+                )
+              } // Pass notification ID to the click handler
+              style={{
+                cursor: notification.checked ? "auto" : "pointer",
+              }}
+            >
+              <div className="flex items-center">
+                <div className="text-blue-600 visited:text-purple-600 font-bold text-lg mr-2">
+                  {notification.notification_name}
+                </div>
+                {isNewNotification && (
+                  <span className="rounded-full bg-red-500 text-white px-1 py-0.5 text-xs">
+                    New
+                  </span>
+                )}
+              </div>
+              <p style={notificationStyle}>
+                {notification.notification_description}
+              </p>
+              {isNewNotification && (
+                <div className="absolute hidden group-hover:flex bg-gray-100 p-2 rounded-lg text-xs">
+                  Click to checkout
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
   return (
     <div className="flex h-screen">
       {/* for Dashboard-contents */}
@@ -85,104 +179,8 @@ function Content() {
           Notifications
         </div>
         <hr className="border-t-2 border-black my-1" />
-        <div className="laptop:text-sm desktop:text-base tablet:text-sm  ">
-          <div className="desktop:mx-1 my-1 desktop:py-2 laptop:mx-2 my-2 laptop:py-4 text-left  tablet:py-1 tablet:mx-1">
-            <a
-              href="https://seinfeldquotes.com"
-              className="text-blue-600 visited:text-purple-600 font-bold"
-            >
-              Passenger try to enter before time
-            </a>
-            <p className="text-red-700">
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry.
-            </p>
-          </div>
-          {/* Second */}
-          <div className="desktop:mx-1 my-1 desktop:py-2 laptop:mx-2 my-2 laptop:py-4 text-left tablet:py-1 tablet:mx-1">
-            <a
-              href="https://seinfeldquotes.com"
-              className="text-blue-600 visited:text-purple-600 font-bold"
-            >
-              Passenger try to enter before time
-            </a>
-            <p className="text-red-700">
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry.
-            </p>
-          </div>
-
-          {/* Third */}
-          <div className="desktop:mx-1 my-1 desktop:py-2 laptop:mx-2 my-2 laptop:py-4 text-left tablet:py-1 tablet:mx-1">
-            <a
-              href="https://seinfeldquotes.com"
-              className="text-blue-600 visited:text-purple-600 font-bold"
-            >
-              Passenger try to enter before time
-            </a>
-            <p>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry.
-            </p>
-          </div>
-
-          {/* fourth */}
-          <div className="desktop:mx-1 my-1 desktop:py-2 laptop:mx-2 my-2 laptop:py-4 text-left tablet:py-1 tablet:mx-1">
-            <a
-              href="https://seinfeldquotes.com"
-              className="text-blue-600 visited:text-purple-600 font-bold"
-            >
-              Passenger try to enter before time
-            </a>
-            <p>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry.
-            </p>
-          </div>
-
-          {/* fifth */}
-
-          <div className="desktop:mx-1 my-1 desktop:py-2 laptop:mx-2 my-2 laptop:py-4 text-left tablet:py-1 tablet:mx-1">
-            <a
-              href="https://seinfeldquotes.com"
-              className="text-blue-600 visited:text-purple-600 font-bold"
-            >
-              Passenger try to enter before time
-            </a>
-            <p>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry.
-            </p>
-          </div>
-
-          {/* sixth */}
-
-          <div className="desktop:mx-1 my-1 desktop:py-2 laptop:mx-2 my-2 laptop:py-4 text-left tablet:py-1 tablet:mx-1">
-            <a
-              href="https://seinfeldquotes.com"
-              className="text-blue-600 visited:text-purple-600 font-bold"
-            >
-              Passenger try to enter before time
-            </a>
-            <p>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry.
-            </p>
-          </div>
-
-          {/* seventh */}
-          <div className="desktop:mx-1 my-1 desktop:py-2 laptop:mx-2 my-2 laptop:py-4 text-left tablet:py-1 tablet:mx-1">
-            <a
-              href="https://seinfeldquotes.com"
-              className="text-blue-600 visited:text-purple-600 font-bold"
-            >
-              Passenger try to enter before time
-            </a>
-            <p>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry.
-            </p>
-          </div>
+        <div className="laptop:text-sm desktop:text-base tablet:text-sm">
+          {renderNotifications()}
         </div>
       </div>
     </div>
