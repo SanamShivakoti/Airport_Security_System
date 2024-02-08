@@ -142,7 +142,6 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
         if text_data == 'detect_faces':
             await self.detect_faces()
 
-
     def euclidean_distance(self, v1, v2):
         return np.sqrt(((v1 - v2) ** 2).sum())
 
@@ -173,12 +172,55 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
         for fx in os.listdir(dataset_path):
             if fx.endswith('.npy'):
                 names[class_id] = fx[:-4]
-                data_item = np.load(os.path.join(dataset_path, fx))
+                try:
+                    data_item = np.load(os.path.join(dataset_path, fx))
+                except Exception as e:
+                    print(f"Error loading data from file {fx}: {e}")
+                    continue
+
+                # Add a check for an empty data item
+                if data_item.size == 0:
+                    class_id += 1
+                    continue
+
                 face_data.append(data_item)
 
                 target = class_id * np.ones((data_item.shape[0],))
                 class_id += 1
                 labels.append(target)
+
+        # Check if any valid data was found
+        if not face_data:
+            # Capture frames for 10 seconds and send the last frame as unknown face
+            start_time = time.time()
+            unknown_frame = None
+            while time.time() - start_time < 10:
+                ret, frame = cap.read()
+                if ret:
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+                    for face in faces:
+                        x, y, w, h = face
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+
+                    cv2.imshow("Faces", frame)
+                    cv2.waitKey(1)
+
+                    # Store the last frame
+                    unknown_frame = frame
+
+            # Send the last captured frame as unknown face
+            if unknown_frame is not None:
+                _, encoded_unknown_face = cv2.imencode('.jpg', unknown_frame)
+                unknown_face_base64 = base64.b64encode(encoded_unknown_face).decode('utf-8')
+                await self.send_result('Unknown', unknown_face_base64)
+            else:
+                await self.send_error("Error capturing frame.")
+
+            cap.release()
+            cv2.destroyAllWindows()
+            return
 
         face_dataset = np.concatenate(face_data, axis=0)
         face_labels = np.concatenate(labels, axis=0).reshape((-1, 1))
@@ -192,7 +234,7 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
         font = cv2.FONT_HERSHEY_SIMPLEX
 
         start_time = time.time()
-        result_sent = False 
+        result_sent = False
 
         # Collect some initial distances for dynamic threshold calculation
         initial_distances = []
@@ -205,7 +247,7 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
                 for face in faces:
                     x, y, w, h = face
                     offset = 5
-                    face_section = frame[y - offset : y + h + offset, x - offset : x + w + offset]
+                    face_section = frame[y - offset: y + h + offset, x - offset: x + w + offset]
 
                     # Add a check for an empty face section
                     if not face_section.size == 0:
@@ -215,7 +257,6 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
 
         # Set the threshold dynamically
         dynamic_threshold = 9000
-
 
         while True:
             ret, frame = cap.read()
@@ -227,9 +268,9 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
             for face in faces:
                 x, y, w, h = face
                 offset = 5
-                face_section = frame[y - offset : y + h + offset, x - offset : x + w + offset]
+                face_section = frame[y - offset: y + h + offset, x - offset: x + w + offset]
 
-                # Add a check for an empty face section
+                # check for an empty face section
                 if not face_section.size == 0:
                     # Use the SVM decision function to get the confidence score
                     face_section = cv2.resize(face_section, (100, 100))
@@ -247,21 +288,20 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
                         label = names[int(out)]
                         unknown_face_base64 = None
 
-                    cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                    cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
+                                cv2.LINE_AA)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
 
             cv2.imshow("Faces", frame)
-            cv2.waitKey(1)   
+            cv2.waitKey(1)
 
             elapsed_time = time.time() - start_time
-            if elapsed_time >= 10 and not result_sent: 
-                await self.send_result(label, unknown_face_base64) 
-                result_sent = True 
+            if elapsed_time >= 10 and not result_sent:
+                await self.send_result(label, unknown_face_base64)
+                result_sent = True
                 cap.release()
                 cv2.destroyAllWindows()
                 return
-            
-
 
     async def send_result(self, label, unknown_face_base64):
         if unknown_face_base64 is None:
@@ -280,12 +320,11 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
 
         await self.send_json(payload)
 
-
     async def send_error(self, message):
         payload = {
-                'type': 'error',
-                'message': message,
-            }
+            'type': 'error',
+            'message': message,
+        }
         await self.send_json(payload)
 
 
