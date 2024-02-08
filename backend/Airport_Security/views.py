@@ -5,9 +5,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.views import View
-from .models import User, Passenger, Staff
+from .models import User, Passenger, Staff, Notification
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer, StaffDetailsSerializer, ForgetPasswordSerializer
+from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer, StaffDetailsSerializer, ForgetPasswordSerializer, AdminNotificationSerializer,UserNotificationSerializer
 from .renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -526,6 +526,14 @@ class SendMailToAdminView(APIView):
             test_image_bytes = base64.b64decode(base64_image)
             test_image_io = BytesIO(test_image_bytes)
 
+                        # Save notification to the database
+            notification_data = {
+                'notification_name': 'Unauthorized Detected',
+                'notification_description': 'Unknown face has detected. Image of unknown face had already sent to your email. Please, check your email.',
+                'role': 'Admin'
+            }
+            notification = Notification.objects.create(**notification_data)
+
             # Send email using Util class
             email_data = {
                 'subject': 'Test Email with Image',
@@ -681,3 +689,51 @@ class SendOtpForgetUserEmailView(APIView):
 
         return Response({'msg': 'OTP sent via email','type':'success', 'user_id': user.user_id}, status=status.HTTP_200_OK)
 
+
+class SendNotificationView(APIView):
+    def post(self, request):
+        notification_name = request.data.get('notification_name')
+        notification_description = request.data.get('notification_description')
+        role = request.data.get('role')
+
+        # Create a notification instance
+        notification = Notification.objects.create(
+            notification_name=notification_name,
+            notification_description=notification_description,
+            role=role
+        )
+
+        return Response({'message': 'Notification sent successfully'}, status=status.HTTP_200_OK)
+    
+
+class AdminNotificationView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    @role_required(['Admin'])
+    def get(self, request):
+        notifications = Notification.objects.filter(role='Admin')
+        admin_notification_serializer = AdminNotificationSerializer(notifications, many=True)
+        return Response(admin_notification_serializer.data)
+    
+
+
+class UserNotificationView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+    @role_required(['User'])
+    def get(self, request):
+        notifications = Notification.objects.filter(role='User')
+        user_notification_serializer = UserNotificationSerializer(notifications, many=True)
+        return Response(user_notification_serializer.data)
+    
+
+
+class UpdateNotificationCheckedAPIView(APIView):
+    def put(self, request, notification_id):
+        try:
+            notification = Notification.objects.get(pk=notification_id)
+            notification.checked = True
+            notification.save()
+            return Response({'message': 'Notification checked successfully'}, status=status.HTTP_200_OK)
+        except Notification.DoesNotExist:
+            return Response({'error': 'Notification does not exist'}, status=status.HTTP_404_NOT_FOUND)
