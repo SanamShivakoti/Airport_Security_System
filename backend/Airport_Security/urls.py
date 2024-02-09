@@ -1,5 +1,5 @@
 from django.urls import path
-from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView, StaffDetailView, SendMailToAdminView, SendOtpForgetEmailView, VerifyOtpForgetView, ForgetChangePasswordView, SendOtpForgetUserEmailView,SendNotificationView,AdminNotificationView,UserNotificationView,UpdateNotificationCheckedAPIView
+from Airport_Security.views import UserRegistrationView, LoginUserView, UserProfileView, OTPVerifiedPasswordResetView, UserView, UpdateUserView,UpdateUserProfileView, DeleteUserView,VerifyOtpView, SendOtpResetEmailView, FilterUserView, AdminChangePasswordView, PassengerRegistrationView, PassengerDetailView , PassengerView,UpdatePassengerView, DeletePassengerView, FilterPassengerView, StaffRegistrationView, StaffView, DeleteStaffView, FilterStaffView, UpdateStaffView, StaffDetailView, SendMailToAdminView, SendOtpForgetEmailView, VerifyOtpForgetView, ForgetChangePasswordView, SendOtpForgetUserEmailView,SendNotificationView,AdminNotificationView,UserNotificationView,UpdateNotificationCheckedAPIView, AdminActivitiesView, UserActivitiesView
 from .views import flight_details_view
 
 urlpatterns = [
@@ -36,5 +36,7 @@ urlpatterns = [
     path('get/notification/', AdminNotificationView.as_view(), name='get-notification'),
     path('get/user/notification/', UserNotificationView.as_view(), name='get-user-notification'),
     path('update/notification/<int:notification_id>/',UpdateNotificationCheckedAPIView.as_view(), name='update-notifications'),
+    path('activities/', AdminActivitiesView.as_view(), name='get-admin-activities'),
+    path('activities/user/', UserActivitiesView.as_view(), name='get-user-activities'),
 
 ]
