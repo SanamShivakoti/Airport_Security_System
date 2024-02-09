@@ -3,6 +3,7 @@ import {
   useGetPassengersQuery,
   useGetUserNotificationsQuery,
   useUpdateNotificationsMutation,
+  useGetUserActivitiesQuery,
 } from "../../../services/userAuthApi";
 import { getToken } from "../../../services/LocalStorageService";
 function Content() {
@@ -104,6 +105,25 @@ function Content() {
       </div>
     );
   };
+
+  const { data: activities = [], refetch: refetchActivities } =
+    useGetUserActivitiesQuery({
+      access_token,
+    });
+  useEffect(() => {
+    // Set up an interval to refetch user activities every minute
+    const interval = setInterval(() => {
+      refetchActivities();
+    }, 60000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  };
   return (
     <div className="flex h-screen">
       {/* for Dashboard-contents */}
@@ -127,50 +147,21 @@ function Content() {
         <div className="text-2xl text-left font-bold mt-1 mb-1 ml-5">
           Activities
         </div>
-        <div className="font-bold-none bg-slate-300 rounded w-11/12 h-96 border-2 border-black mt-1 mb-1 ml-4 shadow-lg">
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 pt-2 pb-1">
-            This is the First line
-          </p>
-          <hr className="border-solid border-black mx-6" />
-
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
-            This is the Second line
-          </p>
-          <hr className="border-solid border-black mx-6" />
-
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
-            This is the Third line
-          </p>
-          <hr className="border-solid border-black mx-6" />
-
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
-            This is the Fourth line
-          </p>
-          <hr className="border-solid border-black mx-6" />
-
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
-            This is the Fifth line
-          </p>
-          <hr className="border-solid border-black mx-6" />
-
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
-            This is the Sixth line
-          </p>
-          <hr className="border-solid border-black mx-6" />
-
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
-            This is the Seventh line
-          </p>
-          <hr className="border-solid border-black mx-6" />
-
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
-            This is the Eight line
-          </p>
-          <hr className="border-solid border-black mx-6" />
-
-          <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
-            This is the Ninth line
-          </p>
+        <div className="font-bold-none bg-slate-300 rounded w-11/12 h-96 border-2 border-black mt-1 mb-1 ml-4 shadow-lg overflow-y-auto">
+          {activities
+            .slice(0)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .map((activity, index) => (
+              <div key={index}>
+                <p className="text-left mt-1 mb-1 ml-2 mr-2 px-4 py-1">
+                  {activity.activity_description} at{" "}
+                  {formatTimestamp(activity.created_at)}
+                </p>
+                {index !== activities.length - 1 && (
+                  <hr className="border-solid border-black mx-6" />
+                )}
+              </div>
+            ))}
         </div>
       </div>
       {/* For Notifications */}
