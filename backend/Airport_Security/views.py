@@ -5,9 +5,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.views import View
-from .models import User, Passenger, Staff, Notification
+from .models import User, Passenger, Staff, Notification, Activity
 from django.contrib.auth import authenticate
-from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer, StaffDetailsSerializer, ForgetPasswordSerializer, AdminNotificationSerializer,UserNotificationSerializer
+from .serializers import UserRegistrationSerializer, LoginUserSerializer, UserProfileSerializer, OTPVerificationSerializer, UpdateUserProfileSerializer, PasswordResetSerializer, UserSerializer,FilterUserSerializer, UpdateUserSerializer, AdminChangePasswordSerializer, PassengerSerializer, PassengerDetailsSerializer, PassengerGetSerializer, UpdatePassengerSerializer, FilterPassengerSerializer, StaffRegisterSerializer, StaffGetSerializer, FilterStaffSerializer, UpdateStaffSerializer, StaffDetailsSerializer, ForgetPasswordSerializer, AdminNotificationSerializer,UserNotificationSerializer, AdminActivitiesSerializer, UserActivitiesSerializer
 from .renderers import UserRenderer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
@@ -27,6 +27,7 @@ import base64
 from io import BytesIO
 import os
 from django.conf import settings
+from django.db.models import Q
 
 # Generate Token Manually
 def get_tokens_for_user(user):
@@ -53,6 +54,13 @@ class UserRegistrationView(APIView):
         
         user = serializer.save()
         token = get_tokens_for_user(user)
+        # Save activity
+        activity_data = {
+            'activity_description': f"This User {user.user_id} had registered",
+            'role': 'Admin',  
+            'created_at': timezone.now()
+        }
+        activity = Activity.objects.create(**activity_data)
         return Response({'msg' : 'Registration Successful'}, status=status.HTTP_201_CREATED)
 
       
@@ -208,7 +216,6 @@ class UpdateUserView(APIView):
     permission_classes = [IsAuthenticated]
     @role_required(['Admin'])
     def patch(self, request, user_id):
-        print(request.data)
         try:
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
@@ -221,6 +228,12 @@ class UpdateUserView(APIView):
         serializer = UpdateUserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
+            activity_data = {
+                'activity_description': f"This User {user.user_id} was updated",
+                'role': 'Admin',  
+                'created_at': timezone.now()
+            }
+            activity = Activity.objects.create(**activity_data)
             return Response({'msg': 'User updated successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -249,7 +262,14 @@ class DeleteUserView(APIView):
        
         try:
             user = get_object_or_404(User, user_id=user_id)
+            activity_data = {
+                'activity_description': f"This User {user.user_id} was deleted",
+                'role': 'Admin',  
+                'created_at': timezone.now()
+            }
+            activity = Activity.objects.create(**activity_data)
             user.delete()
+
             return Response({'msg': 'User deleted successfully'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -287,7 +307,13 @@ class PassengerRegistrationView(APIView):
 
             serializer = PassengerSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                passenger = serializer.save()
+                activity_data = {
+                    'activity_description': f"This Passenger {passenger.passenger_id} had register",
+                    'role': 'None',  
+                    'created_at': timezone.now()
+                }
+                activity = Activity.objects.create(**activity_data)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -344,6 +370,12 @@ class DeletePassengerView(APIView):
        
         try:
             passenger = get_object_or_404(Passenger, passenger_id=passenger_id)
+            activity_data = {
+                    'activity_description': f"This Passenger {passenger.passenger_id} was  deleted",
+                    'role': 'None',  
+                    'created_at': timezone.now()
+                }
+            activity = Activity.objects.create(**activity_data)
             passenger.delete()
             return Response({'msg': 'Passenger deleted successfully'}, status=status.HTTP_200_OK)
         except Passenger.DoesNotExist:
@@ -366,7 +398,13 @@ class UpdatePassengerView(APIView):
 
         serializer = UpdatePassengerSerializer(passenger, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            passenger = serializer.save()
+            activity_data = {
+                    'activity_description': f"This Passenger {passenger.passenger_id} was Updated",
+                    'role': 'None',  
+                    'created_at': timezone.now()
+                }
+            activity = Activity.objects.create(**activity_data)
             return Response({'msg': 'Passenger updated successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -403,7 +441,13 @@ class StaffRegistrationView(APIView):
         serializer = StaffRegisterSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save()
+            staff  = serializer.save()
+            activity_data = {
+                    'activity_description': f"This Staff {staff.staff_id} had registered",
+                    'role': 'Admin',  
+                    'created_at': timezone.now()
+                }
+            activity = Activity.objects.create(**activity_data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -438,6 +482,13 @@ class DeleteStaffView(APIView):
             binary_file_path = os.path.join(os.path.abspath("./face_dataset/"), F"{face_id}.npy")
             if os.path.exists(binary_file_path):
                 os.remove(binary_file_path)
+
+            activity_data = {
+                    'activity_description': f"This Staff {staff.staff_id} was deleted",
+                    'role': 'Admin',  
+                    'created_at': timezone.now()
+                }
+            activity = Activity.objects.create(**activity_data)
             staff.delete()
             return Response({'msg': 'staff deleted successfully'}, status=status.HTTP_200_OK)
         except Staff.DoesNotExist:
@@ -481,7 +532,13 @@ class UpdateStaffView(APIView):
 
         serializer = UpdateStaffSerializer(staff, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            staff = serializer.save()
+            activity_data = {
+                    'activity_description': f"This Staff {staff.staff_id} was updated",
+                    'role': 'Admin',  
+                    'created_at': timezone.now()
+                }
+            activity = Activity.objects.create(**activity_data)
             return Response({'msg': 'Staff updated successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -737,3 +794,25 @@ class UpdateNotificationCheckedAPIView(APIView):
             return Response({'message': 'Notification checked successfully'}, status=status.HTTP_200_OK)
         except Notification.DoesNotExist:
             return Response({'error': 'Notification does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+class AdminActivitiesView(APIView):
+    renderer_classes = [UserRenderer]
+    # permission_classes = [IsAuthenticated]
+    # @role_required(['Admin'])
+    def get(self, request):
+        notifications = Activity.objects.filter(Q(role='Admin') | Q(role='None'))
+        admin_notification_serializer = AdminActivitiesSerializer(notifications, many=True)
+        return Response(admin_notification_serializer.data)
+        
+
+
+class UserActivitiesView(APIView):
+    renderer_classes = [UserRenderer]
+    # permission_classes = [IsAuthenticated]
+    # @role_required(['Admin'])
+    def get(self, request):
+        notifications = Activity.objects.filter(role='None')
+        admin_notification_serializer = UserActivitiesSerializer(notifications, many=True)
+        return Response(admin_notification_serializer.data)
