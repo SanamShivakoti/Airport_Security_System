@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Passenger, Staff, Notification
+from .models import User, Passenger, Staff, Notification, Activity
 from django.contrib.auth.hashers import make_password
 from drf_extra_fields.fields import Base64ImageField
 
@@ -179,3 +179,14 @@ class UserNotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = '__all__'
         
+
+class AdminActivitiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Activity
+        fields = '__all__'
+
+class UserActivitiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Activity
+        fields = '__all__'
+
