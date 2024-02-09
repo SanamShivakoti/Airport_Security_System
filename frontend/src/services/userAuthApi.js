@@ -308,6 +308,28 @@ export const userAuthApi = createApi({
         };
       },
     }),
+    getAdminActivities: builder.query({
+      query: ({ access_token }) => {
+        return {
+          url: "activities/",
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
+    getUserActivities: builder.query({
+      query: ({ access_token }) => {
+        return {
+          url: "activities/user/",
+          method: "GET",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
+        };
+      },
+    }),
   }),
 });
 
@@ -337,4 +359,6 @@ export const {
   useGetAdminNotificationsQuery,
   useUpdateNotificationsMutation,
   useGetUserNotificationsQuery,
+  useGetAdminActivitiesQuery,
+  useGetUserActivitiesQuery,
 } = userAuthApi;
