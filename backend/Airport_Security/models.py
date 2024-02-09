@@ -200,3 +200,4 @@ class Activity(models.Model):
     activity_id = models.AutoField(primary_key=True)
     activity_description = models.TextField()
     role = models.CharField(max_length=50)
+    created_at = models.DateTimeField(default=timezone.now)
