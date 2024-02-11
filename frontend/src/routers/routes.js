@@ -12,7 +12,86 @@ import PassengerDetails from "../flight_details";
 import PasswordResetPage from "../Admin/forget_password/forget_passord";
 import UserPasswordResetPage from "../Users/forget_password/forget_password_user";
 import StaffsDetails from "../Staff_details/staff_details";
-function PrivateRoute({ element, authenticated, redirectTo }) {
+// import { getToken, removeToken } from "../services/LocalStorageService";
+import { getToken, removeToken } from "../services/LocalStorageService";
+import { removeUserToken } from "../features/authSlice";
+import { useDispatch } from "react-redux";
+
+function AdminRoute({ element, authenticated, redirectTo, userRole }) {
+  const dispatch = useDispatch();
+
+  if (authenticated) {
+    if (userRole === "User") {
+      dispatch(removeUserToken());
+      removeToken();
+
+      return (
+        <Navigate
+          to={redirectTo}
+          replace
+          state={{ from: window.location.pathname }}
+        />
+      );
+    }
+  } else {
+    return (
+      <Navigate
+        to={redirectTo}
+        replace
+        state={{ from: window.location.pathname }}
+      />
+    );
+  }
+  return element;
+}
+
+function UserRoute({ element, authenticated, redirectTo, userRole }) {
+  const dispatch = useDispatch();
+
+  if (authenticated) {
+    if (userRole === "Admin") {
+      dispatch(removeUserToken());
+      removeToken();
+
+      return (
+        <Navigate
+          to={redirectTo}
+          replace
+          state={{ from: window.location.pathname }}
+        />
+      );
+    }
+  } else {
+    return (
+      <Navigate
+        to={redirectTo}
+        replace
+        state={{ from: window.location.pathname }}
+      />
+    );
+  }
+  return element;
+}
+
+function PrivateRoute({
+  element,
+  authenticated,
+  redirectTo,
+  isAdminRoute,
+  role,
+}) {
+  const shouldRedirect =
+    (!isAdminRoute && role === "Admin") || (isAdminRoute && role === "User");
+  if (!authenticated) {
+    return (
+      <Navigate
+        to={redirectTo}
+        replace
+        state={{ from: window.location.pathname }}
+      />
+    );
+  }
+
   return authenticated ? (
     element
   ) : (
@@ -25,9 +104,7 @@ function PrivateRoute({ element, authenticated, redirectTo }) {
 }
 
 function Url() {
-  const { isAuthenticated, role } = useSelector((state) => state.auth);
-  console.log("authenticated", isAuthenticated);
-  console.log("role", role);
+  const { isAuthenticated, UserRole } = useSelector((state) => state.auth);
 
   return (
     <BrowserRouter>
@@ -36,9 +113,11 @@ function Url() {
         <Route
           path="/"
           element={
-            <PrivateRoute
+            <AdminRoute
               element={<Login />}
               authenticated={!isAuthenticated}
+              isAdminRoute={true}
+              userRole={UserRole}
               redirectTo="/Admin/dashboard/"
             />
           }
@@ -48,9 +127,11 @@ function Url() {
         <Route
           path="/Admin/*"
           element={
-            <PrivateRoute
+            <AdminRoute
               element={<Sidebar />}
-              authenticated={!!isAuthenticated}
+              authenticated={isAuthenticated}
+              isAdminRoute={true}
+              userRole={UserRole}
               redirectTo="/"
             />
           }
@@ -59,9 +140,11 @@ function Url() {
         <Route
           path="/User/login/"
           element={
-            <PrivateRoute
+            <UserRoute
               element={<UserLogin />}
               authenticated={!isAuthenticated}
+              isAdminRoute={false}
+              userRole={UserRole}
               redirectTo="/User/dashboard/"
             />
           }
@@ -71,9 +154,11 @@ function Url() {
         <Route
           path="/User/*"
           element={
-            <PrivateRoute
+            <UserRoute
               element={<Usersidebar />}
-              authenticated={!!isAuthenticated}
+              authenticated={isAuthenticated}
+              isAdminRoute={false}
+              userRole={UserRole}
               redirectTo="/User/login/"
             />
           }
