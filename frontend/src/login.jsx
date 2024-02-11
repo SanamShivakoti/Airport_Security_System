@@ -37,13 +37,10 @@ export const Login = () => {
     };
     const res = await loginUser(actualData);
     if (res.error) {
-      // console.log(typeof(res.error.data.errors))
-      // console.log(res.error.data.errors)
       setServerError(res.error.data.errors);
     }
 
     if (res.data) {
-      // console.log(typeof(res.data))
       const role = res.data.role;
 
       if (role === "Admin") {
@@ -53,7 +50,7 @@ export const Login = () => {
           setUserToken({
             access_token: access_token,
             isAuthenticated: true,
-            role: "Admin",
+            UserRole: role,
           })
         );
         navigate("/Admin/dashboard");
@@ -71,9 +68,6 @@ export const Login = () => {
 
   return (
     <div className="main-container">
-      {server_error.non_field_errors
-        ? console.log(server_error.non_field_errors[0])
-        : ""}
       <h2 id="title">Airport Security System</h2>
       <form ref={formRef} onSubmit={handleSubmit} className="login-container">
         <div>
