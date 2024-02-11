@@ -2,15 +2,39 @@ import React from "react";
 import { Typography, Select, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Fragment, useState } from "react";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useRegisterUserMutation } from "../../services/userAuthApi";
-import { storeToken, getToken } from "../../services/LocalStorageService";
+import {
+  storeToken,
+  getToken,
+  removeToken,
+} from "../../services/LocalStorageService";
+import { useDispatch } from "react-redux";
+import { removeUserToken } from "../../features/authSlice";
 function UserRegistration() {
+  const dispatch = useDispatch();
   const [server_error, setServerError] = useState({});
   const formRef = useRef();
   const [registerUser] = useRegisterUserMutation();
   const { access_token } = getToken();
   const navigate = useNavigate();
+  const [unauthorized, setUnauthorized] = useState(false);
+
+  useEffect(() => {
+    const confirmationMessage = "Are you sure you want to leave this page?";
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = confirmationMessage;
+      return confirmationMessage;
+    };
+
+    window.onbeforeunload = handleBeforeUnload;
+
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
 
   const resetformFields = () => {
     formRef.current.reset();
@@ -33,7 +57,9 @@ function UserRegistration() {
     const res = await registerUser({ actualData, access_token });
 
     if (res.error) {
-      console.log(res.error.data.errors);
+      if (res.error.status === 401) {
+        setUnauthorized(true);
+      }
       setServerError(res.error.data.errors);
     }
 
@@ -42,6 +68,14 @@ function UserRegistration() {
       storeToken(res.data.token);
     }
   };
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/");
+    }
+  }, [unauthorized]);
 
   return (
     <div>
@@ -67,7 +101,7 @@ function UserRegistration() {
                 autoComplete="given-name"
                 className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
-              {server_error.name ? (
+              {/* {server_error.name ? (
                 <Typography
                   style={{ fontSize: 12, color: "red", paddingLeft: 10 }}
                 >
@@ -75,7 +109,7 @@ function UserRegistration() {
                 </Typography>
               ) : (
                 ""
-              )}
+              )} */}
             </div>
 
             <div className="mt-4">

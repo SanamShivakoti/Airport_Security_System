@@ -16,17 +16,26 @@ function UserProfile() {
 
   const [image, setImage] = useState("");
   const { access_token } = getToken();
-  const { data, refetch, isLoading, isError } = useAdminProfileViewQuery({
+  const { data, refetch, isLoading, error } = useAdminProfileViewQuery({
     access_token,
   });
+
+  useEffect(() => {
+    if (error) {
+      if (error.status === 401) {
+        dispatch(removeUserToken());
+        removeToken();
+        return navigate("/User/login/");
+      }
+    }
+  }, [error]);
   const handleImageClick = () => {
     inputRef.current.click();
   };
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    console.log(file);
-    setImage(event.target.files[0]);
+    setImage(file);
   };
 
   const [userData, setUserData] = useState({
@@ -37,6 +46,7 @@ function UserProfile() {
     mobile_number: "",
     password: "",
     confirm_password: "",
+    avatar: data?.avatar || null,
   });
 
   useEffect(() => {
@@ -50,6 +60,7 @@ function UserProfile() {
         mobile_number: data.mobile_number || "",
         password: "",
         confirm_password: "",
+        avatar: data.avatar || "",
       });
     }
   }, [data]);
@@ -83,8 +94,8 @@ function UserProfile() {
       <div className="flex flex-col items-center ">
         <div onClick={handleImageClick}>
           <div className="w-32 h-32 rounded-full  overflow-hidden">
-            {image ? (
-              <img src={URL.createObjectURL(image)} alt="" />
+            {userData.avatar ? (
+              <img src={`http://localhost:8000${userData.avatar}`} alt="" />
             ) : (
               <img src={img} alt="" />
             )}

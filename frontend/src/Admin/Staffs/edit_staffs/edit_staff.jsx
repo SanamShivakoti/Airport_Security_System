@@ -4,19 +4,60 @@ import {
   useFilterStaffsQuery,
   useUpdateStaffMutation,
 } from "../../../services/userAuthApi";
-import { storeToken, getToken } from "../../../services/LocalStorageService";
+import {
+  storeToken,
+  getToken,
+  removeToken,
+} from "../../../services/LocalStorageService";
+import { useDispatch } from "react-redux";
+import { removeUserToken } from "../../../features/authSlice";
+import { useNavigate } from "react-router-dom";
 function EditStaffs() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [server_error, setServerError] = useState({});
   const formRef = useRef();
   const { access_token } = getToken();
   const { staff_id } = useParams();
-  const [updateStaff] = useUpdateStaffMutation();
-  const { data, refetch, isLoading } = useFilterStaffsQuery({
+  const [updateStaff, { error: updateError, data: updateData, refetch }] =
+    useUpdateStaffMutation();
+  const {
+    data,
+    refetch: updateRefetch,
+    isLoading,
+    error,
+  } = useFilterStaffsQuery({
     staff_id,
     access_token,
   });
+
+  useEffect(() => {
+    if (error) {
+      if (error.status === 401) {
+        dispatch(removeUserToken());
+        removeToken();
+        return navigate("/");
+      }
+    }
+  }, [error]);
+  const [unauthorized, setUnauthorized] = useState(false);
+  useEffect(() => {
+    const confirmationMessage = "Are you sure you want to leave this page?";
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = confirmationMessage;
+      return confirmationMessage;
+    };
+
+    window.onbeforeunload = handleBeforeUnload;
+
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
   const [faceUrl, setFaceUrl] = useState("");
-  console.log(data);
+
   const [userData, setUserData] = useState({
     first_name: "",
     middle_name: "",
@@ -30,7 +71,7 @@ function EditStaffs() {
   });
 
   useEffect(() => {
-    refetch();
+    updateRefetch();
     if (data) {
       setUserData((prevUserData) => ({
         ...prevUserData,
@@ -61,16 +102,31 @@ function EditStaffs() {
       department: data.get("department"),
       staff_id,
     };
-    const res = updateStaff({ staff_id, actualData, access_token });
 
-    if (res.error) {
-      setServerError(res.error.data.errors);
+    try {
+      updateStaff({ staff_id, actualData, access_token })
+        .then((response) => {
+          if (response.error) {
+            if (response.error.status === 401) {
+              dispatch(removeUserToken());
+              removeToken();
+              return navigate("/");
+            }
+          }
+        })
+        .catch((error) => {});
+    } catch (error) {}
+    if (updateError) {
+      if (updateError.status === 401) {
+        setUnauthorized(true);
+      }
     }
 
-    if (res.data) {
-      storeToken(res.data.token);
+    if (updateData) {
+      storeToken(updateData.token);
     }
   };
+
   return (
     <div>
       <div className="text-3xl font-bold text-center">Staffs Details</div>
@@ -273,7 +329,8 @@ function EditStaffs() {
                   onChange={(e) =>
                     setUserData({ ...userData, face_id: e.target.value })
                   }
-                  className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 cursor-not-allowed"
+                  disabled
+                  className="block bg-white my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 cursor-not-allowed"
                 />
               </div>
             </div>
@@ -281,6 +338,12 @@ function EditStaffs() {
         </div>
 
         <div className="desktop:mt-16 laptop:mt-14 tablet:mt-14 flex items-center justify-end gap-x-6 laptop:px-40 desktop:px-52  tablet:px-32">
+          <button
+            onClick={() => navigate(-1)}
+            className="rounded-md bg-blue-500 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
+          >
+            Back
+          </button>
           <button
             type="submit"
             onClick={handleSubmit}

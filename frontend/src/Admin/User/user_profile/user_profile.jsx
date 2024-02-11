@@ -16,9 +16,19 @@ function Profile() {
 
   const [image, setImage] = useState("");
   const { access_token } = getToken();
-  const { data, refetch, isLoading, isError } = useAdminProfileViewQuery({
+  const { data, refetch, isLoading, error } = useAdminProfileViewQuery({
     access_token,
   });
+
+  useEffect(() => {
+    if (error) {
+      if (error.status === 401) {
+        dispatch(removeUserToken());
+        removeToken();
+        return navigate("/");
+      }
+    }
+  }, [error]);
   const handleImageClick = () => {
     inputRef.current.click();
   };

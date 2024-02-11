@@ -4,10 +4,19 @@ import {
   useAdminProfileViewQuery,
   useUpdateUserProfileMutation,
 } from "../../services/userAuthApi";
-import { getToken, storeToken } from "../../services/LocalStorageService";
+import {
+  getToken,
+  storeToken,
+  removeToken,
+} from "../../services/LocalStorageService";
 import img from "./user.png";
-
+import { removeUserToken } from "../../features/authSlice";
+import { useDispatch } from "react-redux";
 function Settings() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [unauthorized, setUnauthorized] = useState(false);
+  const [fetch, setFetch] = useState(false);
   const inputRef = useRef(null);
   const [server_error, setServerError] = useState({});
   const formRef = useRef();
@@ -15,9 +24,19 @@ function Settings() {
   const [image, setImage] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
   const { access_token } = getToken();
-  const { data, refetch, isLoading, isError } = useAdminProfileViewQuery({
+  const { data, refetch, isLoading, error } = useAdminProfileViewQuery({
     access_token,
   });
+
+  useEffect(() => {
+    if (error) {
+      if (error.status === 401) {
+        dispatch(removeUserToken());
+        removeToken();
+        return navigate("/");
+      }
+    }
+  }, [error]);
   const handleImageClick = () => {
     inputRef.current.click();
   };
@@ -63,7 +82,6 @@ function Settings() {
     e.preventDefault();
     const formData = new FormData(formRef.current);
     if (image) {
-      console.log("lkjsfjsdklf");
       formData.append("avatar", image);
     }
 
@@ -77,17 +95,33 @@ function Settings() {
     };
 
     const res = await updateUser({ user_id, formData, access_token });
-
     if (res.error) {
-      console.log(res.error.data.errors);
+      if (res.error.status === 401) {
+        setUnauthorized(true);
+      }
       setServerError(res.error.data.errors);
     }
 
     if (res.data) {
+      setFetch(true);
       storeToken(res.data.token);
     }
   };
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (fetch) {
+      refetch();
+      setFetch(false);
+    }
+  });
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/");
+    }
+  }, [unauthorized]);
 
   return (
     <div>
@@ -98,12 +132,11 @@ function Settings() {
         <p className="pb-2 text-2xl">Edit Profile</p>
         <div onClick={handleImageClick}>
           <div className="w-32 h-32 rounded-full  overflow-hidden">
-            {/* {userData.avatar || image ? (
-              <img src={`http://localhost:8000${userData.avatar}`} alt="" />
+            {userData.avatar || image ? (
+              <img src={profileImageUrl} alt="" />
             ) : (
-              <img src={userData.avatar} alt="" />
-            )} */}
-            <img src={profileImageUrl} alt="" />
+              <img src={img} alt="" />
+            )}
 
             <input
               type="file"

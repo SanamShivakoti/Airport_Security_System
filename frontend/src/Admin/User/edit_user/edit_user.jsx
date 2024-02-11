@@ -7,18 +7,55 @@ import {
   useUpdateUserMutation,
   useFilterUsersQuery,
 } from "../../../services/userAuthApi";
-import { storeToken, getToken } from "../../../services/LocalStorageService";
+import {
+  storeToken,
+  getToken,
+  removeToken,
+} from "../../../services/LocalStorageService";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { removeUserToken } from "../../../features/authSlice";
 
 function EditUser() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [server_error, setServerError] = useState({});
   const formRef = useRef();
   const [updateUser] = useUpdateUserMutation();
   const { access_token } = getToken();
   const { user_id } = useParams();
-  const { data, refetch, isLoading } = useFilterUsersQuery({
+  const [unauthorized, setUnauthorized] = useState(false);
+
+  useEffect(() => {
+    const confirmationMessage = "Are you sure you want to leave this page?";
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = confirmationMessage;
+      return confirmationMessage;
+    };
+
+    window.onbeforeunload = handleBeforeUnload;
+
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
+
+  const { data, refetch, isLoading, error } = useFilterUsersQuery({
     user_id,
     access_token,
   });
+
+  useEffect(() => {
+    if (error) {
+      if (error.status === 401) {
+        dispatch(removeUserToken());
+        removeToken();
+        return navigate("/");
+      }
+    }
+  }, [error]);
 
   const [userData, setUserData] = useState({
     first_name: "",
@@ -63,7 +100,9 @@ function EditUser() {
     const res = await updateUser({ user_id, actualData, access_token });
 
     if (res.error) {
-      console.log(res.error.data.errors);
+      if (res.error.status === 401) {
+        setUnauthorized(true);
+      }
       setServerError(res.error.data.errors);
     }
 
@@ -71,6 +110,14 @@ function EditUser() {
       storeToken(res.data.token);
     }
   };
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/");
+    }
+  }, [unauthorized]);
 
   return (
     <div>
@@ -247,6 +294,12 @@ function EditUser() {
           </div>
 
           <div className="desktop:mt-24 laptop:mt-14 tablet:mt-14 flex items-center justify-end gap-x-6 laptop:px-40 desktop:px-52  tablet:px-32">
+            <button
+              onClick={() => navigate(-1)}
+              className="rounded-md bg-blue-500 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
+            >
+              Back
+            </button>
             <button
               type="submit"
               onClick={handleSubmit}

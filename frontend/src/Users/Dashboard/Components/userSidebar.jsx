@@ -19,10 +19,11 @@ function Usersidebar() {
   const { access_token } = getToken();
   const [userName, setUserName] = useState({});
   const { data } = useAdminProfileViewQuery({ access_token });
-
+  const [image, setImage] = useState();
   useEffect(() => {
     if (data) {
       setUserName(data);
+      setImage(data.avatar);
     }
   }, [data]);
 
@@ -33,7 +34,15 @@ function Usersidebar() {
         <div id="User-role-title">User</div>
         <div className="profile" onClick={() => navigate("/User/profile/view")}>
           {/* <Avatar src="./user.png" /> */}
-          <img id="profile-image" alt="" src={img} />
+          {image ? (
+            <img
+              id="profile-image"
+              src={`http://localhost:8000${image}`}
+              alt=""
+            />
+          ) : (
+            <img id="profile-image" src={img} alt="" />
+          )}
           <div id="ProfileName">{`${userName.first_name} ${userName.middle_name} ${userName.last_name}`}</div>
           <hr />
         </div>

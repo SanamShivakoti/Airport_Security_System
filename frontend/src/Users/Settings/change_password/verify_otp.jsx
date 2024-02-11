@@ -19,6 +19,7 @@ function PasswordResetPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
   const { access_token } = getToken();
   const dispatch = useDispatch();
 
@@ -47,15 +48,29 @@ function PasswordResetPage() {
     setErrorMessage("");
     const response = await sendOTP({ access_token });
 
-    if (response.data.msg === "OTP sent via email") {
-      setSuccessMessage(response.data.msg);
-      setVerificationStep(2);
-    } else {
+    if (response.data) {
+      if (response.data.msg === "OTP sent via email") {
+        setSuccessMessage(response.data.msg);
+        setVerificationStep(2);
+      }
+    }
+
+    if (response.error) {
+      if (response.error.status === 401) {
+        setUnauthorized(true);
+      }
       setErrorMessage("Failed to send OTP");
     }
 
     setLoading(false);
   };
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/");
+    }
+  }, [unauthorized]);
 
   const handleVerifyOTP = async () => {
     setLoading(true);
@@ -80,6 +95,15 @@ function PasswordResetPage() {
       setVerificationStep(3);
     }
 
+    if (response.error && response.error.status === 401) {
+      setUnauthorized(true);
+    }
+
+    if (response.data) {
+      setSuccessMessage("OTP verified successfully");
+      setVerificationStep(3);
+    }
+
     setLoading(false);
   };
 
@@ -96,16 +120,23 @@ function PasswordResetPage() {
       access_token,
       actualData: { password: newPassword, password2: confirmPassword },
     });
-    if (response.data.msg === "Password Reset successfully") {
-      setNewPassword("");
-      setConfirmPassword("");
-      setSuccessMessage(response.data.msg);
-      setTimeout(() => {
-        dispatch(removeUserToken());
-        removeToken();
-        navigate("/User/login/");
-      }, 3000);
-    } else {
+
+    if (response.data) {
+      if (response.data.msg === "Password Reset successfully") {
+        setNewPassword("");
+        setConfirmPassword("");
+        setSuccessMessage(response.data.msg);
+        setTimeout(() => {
+          dispatch(removeUserToken());
+          removeToken();
+          navigate("/User/login/");
+        }, 3000);
+      }
+    }
+    if (response.error) {
+      if (response.error.status === 401) {
+        setUnauthorized(true);
+      }
       setErrorMessage("Failed to reset password");
     }
 

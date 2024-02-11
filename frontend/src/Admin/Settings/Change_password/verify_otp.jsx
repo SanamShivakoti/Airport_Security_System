@@ -4,6 +4,7 @@ import {
   useSendOTPMutation,
   useVerifyOTPMutation,
   useResetPasswordMutation,
+  useAdminProfileViewQuery,
 } from "../../../services/userAuthApi";
 import { getToken, removeToken } from "../../../services/LocalStorageService";
 import { useNavigate } from "react-router-dom";
@@ -21,7 +22,7 @@ function PasswordResetPage() {
   const [loading, setLoading] = useState(false);
   const { access_token } = getToken();
   const dispatch = useDispatch();
-
+  const [unauthorized, setUnauthorized] = useState(false);
   const [sendOTP] = useSendOTPMutation();
   const [verifyOTP] = useVerifyOTPMutation();
   const [resetPassword] = useResetPasswordMutation();
@@ -42,20 +43,47 @@ function PasswordResetPage() {
     };
   }, []);
 
+  const { data, refetch, isLoading, error } = useAdminProfileViewQuery({
+    access_token,
+  });
+  useEffect(() => {
+    if (error) {
+      if (error.status === 401) {
+        dispatch(removeUserToken());
+        removeToken();
+        return navigate("/");
+      }
+    }
+  }, [error]);
+
   const handleSendOTP = async () => {
     setLoading(true);
     setErrorMessage("");
     const response = await sendOTP({ access_token });
+    if (response.data) {
+      if (response.data.msg === "OTP sent via email") {
+        setSuccessMessage(response.data.msg);
+        setVerificationStep(2);
+      }
+    }
 
-    if (response.data.msg === "OTP sent via email") {
-      setSuccessMessage(response.data.msg);
-      setVerificationStep(2);
-    } else {
+    if (response.error) {
+      if (response.error.status === 401) {
+        setUnauthorized(true);
+      }
       setErrorMessage("Failed to send OTP");
     }
 
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/");
+    }
+  }, [unauthorized]);
 
   const handleVerifyOTP = async () => {
     setLoading(true);
@@ -75,7 +103,13 @@ function PasswordResetPage() {
       } else {
         setErrorMessage(response.error.data.error);
       }
-    } else {
+    }
+
+    if (response.error && response.error.status === 401) {
+      setUnauthorized(true);
+    }
+
+    if (response.data) {
       setSuccessMessage("OTP verified successfully");
       setVerificationStep(3);
     }
@@ -96,16 +130,22 @@ function PasswordResetPage() {
       access_token,
       actualData: { password: newPassword, password2: confirmPassword },
     });
-    if (response.data.msg === "Password Reset successfully") {
-      setNewPassword("");
-      setConfirmPassword("");
-      setSuccessMessage(response.data.msg);
-      setTimeout(() => {
-        dispatch(removeUserToken());
-        removeToken();
-        navigate("/");
-      }, 3000);
-    } else {
+    if (response.data) {
+      if (response.data.msg === "Password Reset successfully") {
+        setNewPassword("");
+        setConfirmPassword("");
+        setSuccessMessage(response.data.msg);
+        setTimeout(() => {
+          dispatch(removeUserToken());
+          removeToken();
+          navigate("/");
+        }, 3000);
+      }
+    }
+    if (response.error) {
+      if (response.error.status === 401) {
+        setUnauthorized(true);
+      }
       setErrorMessage("Failed to reset password");
     }
 

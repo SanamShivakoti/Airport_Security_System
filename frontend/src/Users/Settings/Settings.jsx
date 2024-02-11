@@ -4,27 +4,52 @@ import {
   useAdminProfileViewQuery,
   useUpdateUserProfileMutation,
 } from "../../services/userAuthApi";
-import { getToken, storeToken } from "../../services/LocalStorageService";
+import {
+  getToken,
+  storeToken,
+  removeToken,
+} from "../../services/LocalStorageService";
 import img from "./user.png";
-
+import { removeUserToken } from "../../features/authSlice";
+import { useDispatch } from "react-redux";
 function Settings() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [unauthorized, setUnauthorized] = useState(false);
   const inputRef = useRef(null);
+  const [fetch, setFetch] = useState(false);
   const [server_error, setServerError] = useState({});
   const formRef = useRef();
   const [updateUser] = useUpdateUserProfileMutation();
   const [image, setImage] = useState("");
   const { access_token } = getToken();
-  const { data, refetch, isLoading, isError } = useAdminProfileViewQuery({
+  const [profileImageUrl, setProfileImageUrl] = useState("");
+  const { data, refetch, isLoading, error } = useAdminProfileViewQuery({
     access_token,
   });
+  useEffect(() => {
+    if (error) {
+      if (error.status === 401) {
+        dispatch(removeUserToken());
+        removeToken();
+        return navigate("/User/login/");
+      }
+    }
+  }, [error]);
   const handleImageClick = () => {
     inputRef.current.click();
   };
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-    console.log(file);
-    setImage(event.target.files[0]);
+    setImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImageUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const [userData, setUserData] = useState({
@@ -33,12 +58,11 @@ function Settings() {
     last_name: "",
     email: "",
     mobile_number: "",
-    password: "",
-    confirm_password: "",
+    avatar: data?.avatar || null,
   });
 
   useEffect(() => {
-    refetch();
+    // refetch();
     if (data) {
       setUserData({
         first_name: data.first_name || "",
@@ -46,39 +70,56 @@ function Settings() {
         last_name: data.last_name || "",
         email: data.email || "",
         mobile_number: data.mobile_number || "",
-        password: "",
-        confirm_password: "",
+        avatar: data.avatar || "",
       });
+      setProfileImageUrl(`http://localhost:8000${data.avatar}`);
     }
   }, [data]);
 
   const { user_id } = data || {};
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = new FormData(formRef.current);
+    const formData = new FormData(formRef.current);
+    if (image) {
+      formData.append("avatar", image);
+    }
     const actualData = {
-      first_name: data.get("first_name"),
-      middle_name: data.get("middle_name"),
-      last_name: data.get("last_name"),
-      email: data.get("email"),
-      mobile_number: data.get("mobile_number"),
-      password: "",
-      password2: "",
-      user_id,
+      first_name: formData.get("first_name"),
+      middle_name: formData.get("middle_name"),
+      last_name: formData.get("last_name"),
+      email: formData.get("email"),
+      mobile_number: formData.get("mobile_number"),
+      avatar: formData.avatar,
     };
 
-    const res = await updateUser({ user_id, actualData, access_token });
-
+    const res = await updateUser({ user_id, formData, access_token });
     if (res.error) {
-      console.log(res.error.data.errors);
+      if (res.error.status === 401) {
+        setUnauthorized(true);
+      }
       setServerError(res.error.data.errors);
     }
 
     if (res.data) {
+      setFetch(true);
       storeToken(res.data.token);
     }
   };
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (fetch) {
+      refetch();
+      setFetch(false);
+    }
+  });
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/User/login/");
+    }
+  }, [unauthorized]);
 
   return (
     <div>
@@ -89,8 +130,8 @@ function Settings() {
         <p className="pb-2 text-2xl">Edit Profile</p>
         <div onClick={handleImageClick}>
           <div className="w-32 h-32 rounded-full  overflow-hidden">
-            {image ? (
-              <img src={URL.createObjectURL(image)} alt="" />
+            {userData.avatar || image ? (
+              <img src={profileImageUrl} alt="" />
             ) : (
               <img src={img} alt="" />
             )}

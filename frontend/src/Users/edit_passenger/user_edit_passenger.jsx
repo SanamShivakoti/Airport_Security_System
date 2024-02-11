@@ -2,14 +2,43 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Typography } from "@mui/material";
 
-import { useUpdatePassengerMutation, useFilterPassengersQuery, } from "../../services/userAuthApi";
-import { storeToken, getToken } from "../../services/LocalStorageService";
+import {
+  useUpdatePassengerMutation,
+  useFilterPassengersQuery,
+} from "../../services/userAuthApi";
+import {
+  storeToken,
+  getToken,
+  removeToken,
+} from "../../services/LocalStorageService";
+import { useDispatch } from "react-redux";
+import { removeUserToken } from "../../features/authSlice";
+import { useNavigate } from "react-router-dom";
 function UserEditPassengers() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [server_error, setServerError] = useState({});
   const formRef = useRef();
   const [updatePassenger] = useUpdatePassengerMutation();
   const { access_token } = getToken();
   const { passenger_id } = useParams();
+  const [unauthorized, setUnauthorized] = useState(false);
+
+  useEffect(() => {
+    const confirmationMessage = "Are you sure you want to leave this page?";
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = confirmationMessage;
+      return confirmationMessage;
+    };
+
+    window.onbeforeunload = handleBeforeUnload;
+
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
 
   const formatToLocalTime = (dateTime) => {
     const time = new Date(dateTime).toLocaleTimeString("en-US", {
@@ -24,10 +53,18 @@ function UserEditPassengers() {
     const localDateTime = new Date(`${date} ${time}`);
     return localDateTime.toISOString();
   };
-  const { data, refetch, isLoading } = useFilterPassengersQuery({
+  const { data, refetch, isLoading, error } = useFilterPassengersQuery({
     passenger_id,
     access_token,
   });
+
+  useEffect(() => {
+    if (error.status === 401) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/User/login/");
+    }
+  }, [error]);
 
   const [userData, setUserData] = useState({
     first_name: "",
@@ -124,7 +161,9 @@ function UserEditPassengers() {
     });
 
     if (res.error) {
-      console.log(res.error);
+      if (res.error.status === 401) {
+        setUnauthorized(true);
+      }
       setServerError(res.error);
     }
 
@@ -132,6 +171,14 @@ function UserEditPassengers() {
       storeToken(res.data.token);
     }
   };
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/User/login/");
+    }
+  }, [unauthorized]);
   return (
     <div>
       <div className="text-3xl flex justify-center font-bold">
@@ -489,6 +536,12 @@ function UserEditPassengers() {
           </div>
 
           <div className="desktop:mt-10 laptop:mt-14 tablet:mt-14 flex items-center justify-end gap-x-6 laptop:px-32 desktop:px-40  tablet:px-24">
+            <button
+              onClick={() => navigate(-1)}
+              className="rounded-md bg-blue-500 w-[36rem] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-700"
+            >
+              Back
+            </button>
             <button
               type="submit"
               onClick={handlePassengerEdit}

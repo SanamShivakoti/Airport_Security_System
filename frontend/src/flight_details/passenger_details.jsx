@@ -49,13 +49,10 @@ const PassengerDetails = () => {
     ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
     // ws.current = new WebSocket("ws://127.0.0.1:8000/practice");
 
-    ws.current.onopen = () => {
-      console.log("Web Socket Opened");
-    };
+    ws.current.onopen = () => {};
 
     ws.current.onmessage = (event) => {
       // Handle incoming messages from the server
-      console.log("Received message:", event.data);
 
       const data = JSON.parse(event.data);
       const receivedPassportNumber = data.type;
@@ -65,9 +62,7 @@ const PassengerDetails = () => {
       }
     };
 
-    ws.current.onclose = () => {
-      console.log("Web Socket Closed");
-    };
+    ws.current.onclose = () => {};
 
     return () => {
       // Clean up the WebSocket connection when the component is unmounted
@@ -95,7 +90,6 @@ const PassengerDetails = () => {
 
       if (!res.ok) {
         const serverError = await res.json();
-        console.error("Error in response:", serverError.detail);
         setError(serverError.detail);
         sendNotification();
         setTimeout(() => {
@@ -144,48 +138,58 @@ const PassengerDetails = () => {
         // Check if departure date is today
         const today = new Date();
 
-        console.log("depature date", departureDateTime.toTimeString());
-        console.log("today date", today.toTimeString());
-        if (departureDateTime.toDateString() === today.toDateString()) {
-          setIsDepartureToday(true);
-
-          // Check if departure time is in the future
-          const departureDateTime = new Date(
-            `${formattedDepartureDate} ${formattedDepartureTime}`
+        if (departureDateTime.toDateString() < today.toDateString()) {
+          // Departure date has already passed
+          setDialogMessage(
+            "Your flight date has already been passed. Please contact the concerned authority for reschedule."
           );
-          console.log("formated data and time", departureDateTime);
+          setShowDialog(true);
 
-          if (today < departureDateTime) {
-            const timeDiffInMilliseconds = departureDateTime - today;
-            console.log("time different", timeDiffInMilliseconds);
-            const timeDiffInHours = timeDiffInMilliseconds / (1000 * 60 * 60);
-            console.log("time different in hours", timeDiffInHours);
+          // Automatically close the dialog after the specified duration
+          setTimeout(() => {
+            setShowDialog(false);
+          }, dialogVisibilityDuration);
+          setIsEntryAllowed(false);
+        } else {
+          if (departureDateTime.toDateString() === today.toDateString()) {
+            setIsDepartureToday(true);
 
-            if (timeDiffInHours > 2) {
-              // Entry not allowed, show remaining time
+            // Check if departure time is in the future
+            const departureDateTime = new Date(
+              `${formattedDepartureDate} ${formattedDepartureTime}`
+            );
+
+            if (today < departureDateTime) {
+              const timeDiffInMilliseconds = departureDateTime - today;
+
+              const timeDiffInHours = timeDiffInMilliseconds / (1000 * 60 * 60);
+
+              if (timeDiffInHours > 2) {
+                // Entry not allowed, show remaining time
+                setIsEntryAllowed(false);
+                setRemainingTime(timeDiffInHours.toFixed(2));
+              } else if (timeDiffInHours <= 2 && timeDiffInHours > 0) {
+                // Entry allowed
+                setIsEntryAllowed(true);
+              }
+            } else {
+              // Departure time has already passed
+              setDialogMessage(
+                "Your flight has already been missed. Please contact the concerned authority for reschedule."
+              );
+              setShowDialog(true);
+
+              // Automatically close the dialog after the specified duration
+              setTimeout(() => {
+                setShowDialog(false);
+              }, dialogVisibilityDuration);
               setIsEntryAllowed(false);
-              setRemainingTime(timeDiffInHours.toFixed(2));
-            } else if (timeDiffInHours <= 2 && timeDiffInHours > 0) {
-              // Entry allowed
-              setIsEntryAllowed(true);
             }
           } else {
-            // Departure time has already passed
-            setDialogMessage(
-              "Your flight has already been missed. Please contact the concerned authority for reschedule."
-            );
-            setShowDialog(true);
-
-            // Automatically close the dialog after the specified duration
-            setTimeout(() => {
-              setShowDialog(false);
-            }, dialogVisibilityDuration);
+            // Departure date is not today
+            setIsDepartureToday(false);
             setIsEntryAllowed(false);
           }
-        } else {
-          // Departure date is not today
-          setIsDepartureToday(false);
-          setIsEntryAllowed(false);
         }
 
         setTimeout(() => {
@@ -214,9 +218,7 @@ const PassengerDetails = () => {
           setEntryTime("--:--:--");
         }, 1 * 60 * 1000);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    } catch (error) {}
   };
 
   const sendNotification = async () => {
@@ -239,22 +241,17 @@ const PassengerDetails = () => {
       );
 
       if (notificationRes.ok) {
-        console.log("Notification sent successfully");
       } else {
         const notificationError = await notificationRes.json();
-        console.error("Error sending notification:", notificationError.detail);
+        // notificationError.detail
       }
-    } catch (error) {
-      console.error("Error sending notification:", error);
-    }
+    } catch (error) {}
   };
 
   const sendMessage = (message) => {
     if (ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(message);
-      console.log("Message sent:", message);
     } else {
-      console.error("WebSocket not open. Failed to send message:", message);
     }
   };
 

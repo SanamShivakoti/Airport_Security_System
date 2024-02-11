@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   useGetPassengersQuery,
   useGetUserNotificationsQuery,
   useUpdateNotificationsMutation,
   useGetUserActivitiesQuery,
 } from "../../../services/userAuthApi";
-import { getToken } from "../../../services/LocalStorageService";
+import { getToken, removeToken } from "../../../services/LocalStorageService";
+import { removeUserToken } from "../../../features/authSlice";
+import { useDispatch } from "react-redux";
 function Content() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { access_token } = getToken();
   const {
     data: passengers = [],
@@ -16,7 +21,11 @@ function Content() {
 
   const totalpassengers = passengers.length;
 
-  const { data: notifications = [], refetch } = useGetUserNotificationsQuery({
+  const {
+    data: notifications = [],
+    error: notificationsError,
+    refetch,
+  } = useGetUserNotificationsQuery({
     access_token,
   });
 
@@ -27,11 +36,19 @@ function Content() {
 
     return () => clearInterval(interval);
   }, []);
+  useEffect(() => {
+    if (notificationsError) {
+      if (notificationsError.status === 401) {
+        dispatch(removeUserToken());
+        removeToken();
+        return navigate("/User/login/");
+      }
+    }
+  }, [notificationsError]);
   const [loading, setLoading] = useState(false);
   const [handleUpdateNotificatios] = useUpdateNotificationsMutation();
   const renderNotifications = () => {
     const handleClickNotification = async (notification_id, access_token) => {
-      console.log("Clicked");
       try {
         setLoading(true);
         // Call the API function to update notification status
@@ -41,7 +58,6 @@ function Content() {
         });
         refetch();
       } catch (error) {
-        console.error("Error updating notification:", error);
       } finally {
         setLoading(false);
       }

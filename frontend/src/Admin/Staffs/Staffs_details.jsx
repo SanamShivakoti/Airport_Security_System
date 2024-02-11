@@ -1,8 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import React, { useRef, useEffect, useState } from "react";
 import { useRegisterStaffMutation } from "../../services/userAuthApi";
-import { getToken, storeToken } from "../../services/LocalStorageService";
+import {
+  getToken,
+  storeToken,
+  removeToken,
+} from "../../services/LocalStorageService";
+import { removeUserToken } from "../../features/authSlice";
+import { useDispatch } from "react-redux";
 function StaffsRegistration() {
+  const dispatch = useDispatch();
   const formRef = useRef();
   const navigate = useNavigate();
   const ws = useRef(null);
@@ -11,11 +18,27 @@ function StaffsRegistration() {
   const [faceId, setFaceID] = useState("");
   const [registerStaff] = useRegisterStaffMutation();
   const [server_error, setServerError] = useState({});
+  const [unauthorized, setUnauthorized] = useState(false);
 
   const resetformFields = () => {
     formRef.current.reset();
   };
 
+  useEffect(() => {
+    const confirmationMessage = "Are you sure you want to leave this page?";
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = confirmationMessage;
+      return confirmationMessage;
+    };
+
+    window.onbeforeunload = handleBeforeUnload;
+
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData(formRef.current);
@@ -33,29 +56,37 @@ function StaffsRegistration() {
       face_id: data.get("face_id"),
     };
 
-    console.log(actualData);
     const res = await registerStaff({ data, access_token });
-    console.log(data);
+
     if (res.error) {
-      console.log(res.error.data.errors);
+      if (res.error.status === 401) {
+        setUnauthorized(true);
+      }
       setServerError(res.error.data.errors);
     }
 
     if (res.data) {
       resetformFields();
+      setImageUrl("");
+      setFaceID("");
       storeToken(res.data.token);
     }
   };
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/");
+    }
+  }, [unauthorized]);
   useEffect(() => {
     ws.current = new WebSocket("ws://127.0.0.1:8000/camera/open");
 
-    ws.current.onopen = () => {
-      console.log("Web Socket Opened");
-    };
+    ws.current.onopen = () => {};
 
     ws.current.onmessage = (event) => {
       // Handle incoming messages from the server
-      console.log("Received message:", event.data);
 
       const data = JSON.parse(event.data);
       const base64Image = data.image;
@@ -69,9 +100,7 @@ function StaffsRegistration() {
       setFaceID(faceID);
     };
 
-    ws.current.onclose = () => {
-      console.log("Web Socket Closed");
-    };
+    ws.current.onclose = () => {};
 
     return () => {
       // Clean up the WebSocket connection when the component is unmounted
@@ -85,9 +114,7 @@ function StaffsRegistration() {
   const sendMessage = (message) => {
     if (ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(message);
-      console.log("Message sent:", message);
     } else {
-      console.error("WebSocket not open. Failed to send message:", message);
     }
   };
 

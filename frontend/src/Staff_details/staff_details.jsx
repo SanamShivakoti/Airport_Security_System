@@ -19,14 +19,9 @@ const StaffDetails = () => {
   useEffect(() => {
     ws.current = new WebSocket("ws://127.0.0.1:8000/face/detection");
 
-    ws.current.onopen = () => {
-      console.log("Web Socket Opened");
-    };
+    ws.current.onopen = () => {};
 
     ws.current.onmessage = (event) => {
-      // Handle incoming messages from the server
-      // console.log("Received message:", event.data);
-
       const data = JSON.parse(event.data);
       const resultType = data.result_type;
 
@@ -46,9 +41,7 @@ const StaffDetails = () => {
       }
     };
 
-    ws.current.onclose = () => {
-      console.log("Web Socket Closed");
-    };
+    ws.current.onclose = () => {};
 
     return () => {
       // Clean up the WebSocket connection when the component is unmounted
@@ -73,8 +66,12 @@ const StaffDetails = () => {
 
       if (!res.ok) {
         const serverError = await res.json();
-        console.error("Error in response:", serverError.detail);
-        setError(serverError.detail);
+
+        if (res.status === 404) {
+          setUnknownMessage("Not Found");
+        }
+
+        setUnknownMessage(serverError.detail);
 
         setTimeout(() => {
           setError(null);
@@ -103,15 +100,12 @@ const StaffDetails = () => {
           setImageUrl("");
         }, 1 * 60 * 1000);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
     if (unkownFace) {
       notifyData();
-      console.log(unkownFace);
     }
   }, [unkownFace]);
 
@@ -130,21 +124,18 @@ const StaffDetails = () => {
       if (!res.ok) {
       } else {
       }
-    } catch (error) {
-      console.error("Error on sending notification:", error);
-    }
+    } catch (error) {}
   };
 
   const handleOpenCamera = async () => {
+    setUnknownMessage("");
     sendMessage("detect_faces");
   };
 
   const sendMessage = (message) => {
     if (ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(message);
-      console.log("Message sent:", message);
     } else {
-      console.error("WebSocket not open. Failed to send message:", message);
     }
   };
   return (

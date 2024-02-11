@@ -1,13 +1,36 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRegisterPassengerMutation } from "../../services/userAuthApi";
-import { storeToken, getToken } from "../../services/LocalStorageService";
-
+import {
+  storeToken,
+  getToken,
+  removeToken,
+} from "../../services/LocalStorageService";
+import { removeUserToken } from "../../features/authSlice";
+import { useDispatch } from "react-redux";
 function PassengersRegistration() {
+  const dispatch = useDispatch();
   const formRef = useRef();
   const [server_error, setServerError] = useState({});
   const [registerPassenger] = useRegisterPassengerMutation();
   const { access_token } = getToken();
+  const [unauthorized, setUnauthorized] = useState(false);
+
+  useEffect(() => {
+    const confirmationMessage = "Are you sure you want to leave this page?";
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = confirmationMessage;
+      return confirmationMessage;
+    };
+
+    window.onbeforeunload = handleBeforeUnload;
+
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
 
   const formatToLocalISO = (date, time) => {
     const localDateTime = new Date(`${date} ${time}`);
@@ -63,7 +86,9 @@ function PassengersRegistration() {
     const res = await registerPassenger({ actualData, access_token });
 
     if (res.error) {
-      console.log(res.error);
+      if (res.error.status === 401) {
+        setUnauthorized(true);
+      }
       setServerError(res.error);
     }
 
@@ -72,6 +97,14 @@ function PassengersRegistration() {
       storeToken(res.data.token);
     }
   };
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/User/login/");
+    }
+  }, [unauthorized]);
 
   const navigate = useNavigate();
   return (

@@ -12,6 +12,8 @@ function ViewPassengers() {
   const { access_token } = getToken();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [fetch, setFetch] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   const {
     data: users = [],
@@ -23,8 +25,22 @@ function ViewPassengers() {
   });
 
   useEffect(() => {
+    if (fetch) {
+      refetch();
+      setFetch(false);
+    }
+  }, [fetch]);
+
+  useEffect(() => {
     refetch();
   }, []);
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/");
+    }
+  }, [unauthorized]);
 
   const filteredUsers = useMemo(() => {
     return users.filter(
@@ -51,7 +67,15 @@ function ViewPassengers() {
   const deletePassenger = async (passenger_id, access_token) => {
     try {
       const response = await handleDelete({ passenger_id, access_token });
-      window.location.reload();
+      if (response.data) {
+        setFetch(true);
+      }
+
+      if (response.error) {
+        if (response.error.status === 401) {
+          setUnauthorized(true);
+        }
+      }
     } catch (error) {}
   };
 
@@ -83,6 +107,15 @@ function ViewPassengers() {
             value={userIdSearch}
             onChange={handleSearchChange}
           />
+        </div>
+
+        <div className="flex justify-between mt-2">
+          <button
+            onClick={() => navigate(-1)}
+            className="mr-24 px-3 py-2 w-28 bg-blue-500 text-white text-sm font-semibold rounded-md shadow-md hover:bg-blue-600"
+          >
+            Back
+          </button>
         </div>
 
         <div className="overflow-x-auto overflow-y-auto">

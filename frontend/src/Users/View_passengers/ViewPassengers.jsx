@@ -14,6 +14,8 @@ function UserViewPassengers() {
   const { access_token } = getToken();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [fetch, setFetch] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   const {
     data: users = [],
@@ -25,8 +27,22 @@ function UserViewPassengers() {
   });
 
   useEffect(() => {
+    if (fetch) {
+      refetch();
+    }
+  }, [fetch]);
+
+  useEffect(() => {
     refetch();
   }, []);
+
+  useEffect(() => {
+    if (unauthorized) {
+      dispatch(removeUserToken());
+      removeToken();
+      return navigate("/User/login/");
+    }
+  }, [unauthorized]);
 
   const filteredUsers = useMemo(() => {
     return users.filter(
@@ -53,7 +69,14 @@ function UserViewPassengers() {
   const deletePassenger = async (passenger_id, access_token) => {
     try {
       const response = await handleDelete({ passenger_id, access_token });
-      window.location.reload();
+
+      if (response.data) {
+        setFetch(true);
+      }
+
+      if (response.error.status === 401) {
+        setUnauthorized(true);
+      }
     } catch (error) {}
   };
 
