@@ -46,8 +46,8 @@ const PassengerDetails = () => {
   const ws = useRef(null);
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
-    // ws.current = new WebSocket("ws://127.0.0.1:8000/practice");
+    // ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
+    ws.current = new WebSocket("ws://127.0.0.1:8000/practice");
 
     ws.current.onopen = () => {};
 
@@ -55,6 +55,10 @@ const PassengerDetails = () => {
       // Handle incoming messages from the server
 
       const data = JSON.parse(event.data);
+
+      if (data.error) {
+        setError(data.error);
+      }
       const receivedPassportNumber = data.type;
       if (receivedPassportNumber === "passportNumber") {
         const newpassportNumber = data.id_number;
@@ -257,6 +261,7 @@ const PassengerDetails = () => {
 
   const handlePassportScan = async () => {
     // Send a message to the WebSocket server (Raspberry Pi)
+    setError("");
     sendMessage("passportscan");
   };
 
