@@ -45,6 +45,10 @@ class UserRegistrationView(APIView):
     @role_required(['Admin']) 
     def post(self, request, format=None):
         email = request.data.get('email', None)
+        role = request.data.get('role', None)
+
+        if role == 'Admin' and User.objects.filter(role='Admin'):
+            return Response({"detail": "An Admin already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
         if  User.objects.filter(email=email):
                 return Response({"detail": "User with this email already registered."}, status=status.HTTP_400_BAD_REQUEST)
@@ -192,9 +196,8 @@ class UpdateUserProfileView(APIView):
     parser_classes = (MultiPartParser, )
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
-    @role_required(['Admin'])
+    @role_required(['Admin','User'])
     def patch(self, request, user_id):
-        print(request.data)
         try:
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
@@ -299,6 +302,11 @@ class PassengerRegistrationView(APIView):
         @role_required(['Admin', 'User']) 
         def post(self, request, *args, **kwargs):
             email = request.data.get('email', None)
+            passport_number = request.data.get('passport_number', None)
+
+            # Check if a Passenger with the provided passport number already exists
+            if  Passenger.objects.filter(passport_number=passport_number):
+                return Response({"detail": "Passenger with this passport number already registered."}, status=status.HTTP_400_BAD_REQUEST)
             
             
             # Check if a Passenger with the provided email already exists
@@ -593,8 +601,8 @@ class SendMailToAdminView(APIView):
 
             # Send email using Util class
             email_data = {
-                'subject': 'Test Email with Image',
-                'body': 'This is a test email with an image. See attached image.',
+                'subject': 'Unknown Face Detected',
+                'body': 'This is a email with an image of Unauthorized. See attached image of Unkown face.',
                 'to_email': admin_email,
             }
 
@@ -609,7 +617,7 @@ class SendMailToAdminView(APIView):
 
 
 
-            print(f"Test Email sent to {admin_email}")
+            
             return Response({'success': 'Admin found'}, status=status.HTTP_200_OK)
         else:
             return Response({'message': 'No admin found'}, status=status.HTTP_404_NOT_FOUND)
