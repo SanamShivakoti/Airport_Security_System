@@ -36,14 +36,12 @@ export const UserLogin = () => {
     };
     const res = await loginUser(actualData);
     if (res.error) {
-      // console.log(typeof(res.error.data.errors))
-      // console.log(res.error.data.errors)
       setServerError(res.error.data.errors);
     }
 
     if (res.data) {
-      // console.log(typeof(res.data))
       const role = res.data.role;
+      const status = res.data.status;
 
       if (role === "User") {
         storeToken(res.data.token);
@@ -52,7 +50,7 @@ export const UserLogin = () => {
           setUserToken({
             access_token: access_token,
             isAuthenticated: true,
-            role: "User",
+            UserRole: role,
           })
         );
         navigate("/User/dashboard");
@@ -70,9 +68,6 @@ export const UserLogin = () => {
 
   return (
     <div className="main-container">
-      {server_error.non_field_errors
-        ? console.log(server_error.non_field_errors[0])
-        : ""}
       <h2 id="title">Airport Security System</h2>
       <form ref={formRef} onSubmit={handleSubmit} className="login-container">
         <div>
