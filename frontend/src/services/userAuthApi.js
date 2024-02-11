@@ -245,6 +245,7 @@ export const userAuthApi = createApi({
           method: "DELETE",
           headers: {
             authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
           },
         };
       },
@@ -256,7 +257,6 @@ export const userAuthApi = createApi({
           method: "GET",
           headers: {
             authorization: `Bearer ${access_token}`,
-            "Content-type": "application/json",
           },
         };
       },
