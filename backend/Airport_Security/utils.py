@@ -43,7 +43,7 @@ class Util:
 
             return email
         except Exception as e:
-            print(f"Error creating email message: {e}")
+            
             return None
 
     @staticmethod
@@ -54,9 +54,9 @@ class Util:
             # Send the email
             try:
                 email.send()
-                print(f"Email sent to {data['to_email']}")
                 return email
             except Exception as e:
-                print(f"Error sending email: {e}")
+                
+                return None
 
         return None

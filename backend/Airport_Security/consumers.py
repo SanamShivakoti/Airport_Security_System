@@ -16,7 +16,7 @@ class PracticeConsumer(AsyncJsonWebsocketConsumer):
           await self.accept()
 
      async def receive(self, text_data=None, bytes_data=None, **kwargs):
-          print(text_data)
+          
           await self.send('PONG')
 
 class CameraTest(AsyncJsonWebsocketConsumer):
@@ -36,7 +36,7 @@ class CameraTest(AsyncJsonWebsocketConsumer):
                 await self.send_image(face_id, image_data)
 
         except json.JSONDecodeError as e:
-            print(f"Error decoding JSON: {e}")
+            
             await self.send_error("Invalid JSON format")
 
     def generate_random_face_id(self):
@@ -84,7 +84,7 @@ class CameraTest(AsyncJsonWebsocketConsumer):
 
                 if skip % 10 == 0:
                     face_data.append(face_selection)
-                    print (len(face_data))
+                    
 
 
                 cv2.imshow(str(k), face_selection)
@@ -101,7 +101,7 @@ class CameraTest(AsyncJsonWebsocketConsumer):
                 face_data = np.array(face_data)
                 face_data = face_data.reshape((face_data.shape[0], -1))
                 np.save(os.path.join(dataset_path, f'{face_id}.npy'), face_data)
-                print("Dataset saved at : {}".format(os.path.join(dataset_path, f'{face_id}.npy')))
+                
 
                 # Release the camera
                 cap.release()
@@ -175,7 +175,7 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
                 try:
                     data_item = np.load(os.path.join(dataset_path, fx))
                 except Exception as e:
-                    print(f"Error loading data from file {fx}: {e}")
+                    
                     continue
 
                 # Add a check for an empty data item
