@@ -6,6 +6,7 @@ import {
   storeToken,
   removeToken,
 } from "../../services/LocalStorageService";
+import { Alert } from "@mui/material";
 import { removeUserToken } from "../../features/authSlice";
 import { useDispatch } from "react-redux";
 function StaffsRegistration() {
@@ -19,6 +20,7 @@ function StaffsRegistration() {
   const [registerStaff] = useRegisterStaffMutation();
   const [server_error, setServerError] = useState({});
   const [unauthorized, setUnauthorized] = useState(false);
+  const [error, setError] = useState("");
 
   const resetformFields = () => {
     formRef.current.reset();
@@ -82,22 +84,25 @@ function StaffsRegistration() {
   }, [unauthorized]);
   useEffect(() => {
     ws.current = new WebSocket("ws://127.0.0.1:8000/camera/open");
+    // ws.current = new WebSocket("ws://192.168.25.25:8000/camera/open");
 
     ws.current.onopen = () => {};
 
     ws.current.onmessage = (event) => {
-      // Handle incoming messages from the server
-
       const data = JSON.parse(event.data);
-      const base64Image = data.image;
-      const faceID = data.face_id;
+      if (data.error) {
+        setError(data.error);
+      } else {
+        const base64Image = data.image;
+        const faceID = data.face_id;
 
-      // Convert the base64 image to a Data URL
-      const dataUrl = `data:image/jpeg;base64,${base64Image}`;
+        // Convert the base64 image to a Data URL
+        const dataUrl = `data:image/jpeg;base64,${base64Image}`;
 
-      // Set the image URL in the state
-      setImageUrl(dataUrl);
-      setFaceID(faceID);
+        // Set the image URL in the state
+        setImageUrl(dataUrl);
+        setFaceID(faceID);
+      }
     };
 
     ws.current.onclose = () => {};
@@ -121,6 +126,11 @@ function StaffsRegistration() {
   return (
     <div>
       <div className="text-3xl font-bold text-center">Staffs Details</div>
+      {error && (
+        <div className="flex items-center mb-4">
+          <Alert severity="error">{error}</Alert>
+        </div>
+      )}
       <div className="mt-8 ">
         <form ref={formRef} onSubmit={handleSubmit}>
           <div className="grid w-auto grid-cols-2 gap-4 laptop:px-40 desktop:px-52  tablet:px-32">
