@@ -12,18 +12,21 @@ import {
 import img from "./user.png";
 import { removeUserToken } from "../../features/authSlice";
 import { useDispatch } from "react-redux";
+import { Alert, Typography } from "@mui/material";
 function Settings() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [unauthorized, setUnauthorized] = useState(false);
   const inputRef = useRef(null);
   const [fetch, setFetch] = useState(false);
-  const [server_error, setServerError] = useState({});
+  const [server_error, setServerError] = useState("");
   const formRef = useRef();
   const [updateUser] = useUpdateUserProfileMutation();
   const [image, setImage] = useState("");
   const { access_token } = getToken();
   const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [emptyFields, setEmptyFields] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
   const { data, refetch, isLoading, error } = useAdminProfileViewQuery({
     access_token,
   });
@@ -79,6 +82,8 @@ function Settings() {
   const { user_id } = data || {};
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setEmptyFields([]);
+    setServerError("");
     const formData = new FormData(formRef.current);
     if (image) {
       formData.append("avatar", image);
@@ -92,6 +97,33 @@ function Settings() {
       avatar: formData.avatar,
     };
 
+    // Check if any required fields are empty
+    const requiredFields = ["first_name", "last_name", "email"];
+
+    const emptyFields = requiredFields.filter(
+      (fieldName) => !userData[fieldName]
+    );
+
+    if (emptyFields.length > 0) {
+      setEmptyFields(emptyFields);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = actualData["email"];
+    if (!emailRegex.test(email)) {
+      setServerError("Invalid email format");
+      return;
+    }
+
+    const mobileNumber = actualData["mobile_number"];
+    if (mobileNumber) {
+      if (mobileNumber.length !== 10) {
+        setServerError("Mobile number must be 10 digits long");
+        return;
+      }
+    }
+
     const res = await updateUser({ user_id, formData, access_token });
     if (res.error) {
       if (res.error.status === 401) {
@@ -102,6 +134,7 @@ function Settings() {
 
     if (res.data) {
       setFetch(true);
+      setSuccessMessage(res.data.msg);
       storeToken(res.data.token);
     }
   };
@@ -126,6 +159,16 @@ function Settings() {
       <div className="text-3xl flex justify-center font-bold pb-2">
         Settings
       </div>
+      {server_error && (
+        <div className="flex items-center mb-2">
+          <Alert severity="error">{server_error}</Alert>
+        </div>
+      )}
+      {successMessage && (
+        <div className="flex items-center mb-2">
+          <Alert severity="success">{successMessage}</Alert>
+        </div>
+      )}
       <div className="flex flex-col items-center ">
         <p className="pb-2 text-2xl">Edit Profile</p>
         <div onClick={handleImageClick}>
@@ -166,8 +209,16 @@ function Settings() {
                 onChange={(e) =>
                   setUserData({ ...userData, first_name: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("first_name")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("first_name") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -210,8 +261,16 @@ function Settings() {
                 onChange={(e) =>
                   setUserData({ ...userData, last_name: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("last_name")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("last_name") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -232,8 +291,16 @@ function Settings() {
                 onChange={(e) =>
                   setUserData({ ...userData, email: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("email")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("email") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-4">

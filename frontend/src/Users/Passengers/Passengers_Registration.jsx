@@ -8,13 +8,16 @@ import {
 } from "../../services/LocalStorageService";
 import { removeUserToken } from "../../features/authSlice";
 import { useDispatch } from "react-redux";
+import { Alert, CircularProgress, Typography } from "@mui/material";
 function PassengersRegistration() {
   const dispatch = useDispatch();
   const formRef = useRef();
-  const [server_error, setServerError] = useState({});
+  const [server_error, setServerError] = useState("");
   const [registerPassenger] = useRegisterPassengerMutation();
   const { access_token } = getToken();
   const [unauthorized, setUnauthorized] = useState(false);
+  const [emptyFields, setEmptyFields] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const confirmationMessage = "Are you sure you want to leave this page?";
@@ -41,6 +44,8 @@ function PassengersRegistration() {
   };
   const handlePassengerRegister = async (e) => {
     e.preventDefault();
+    setEmptyFields([]);
+    setServerError("");
     const data = new FormData(formRef.current);
     const actualData = {
       first_name: data.get("first_name"),
@@ -60,6 +65,48 @@ function PassengersRegistration() {
       arrival_date: data.get("arrival_date"),
       arrival_time: data.get("arrival_time"),
     };
+
+    // Check if any required fields are empty
+    const requiredFields = [
+      { name: "first_name", label: "First Name" },
+      { name: "last_name", label: "Last Name" },
+      { name: "email", label: "Email" },
+      { name: "flight_number", label: "Flight Number" },
+      { name: "plane_number", label: "Plane Number" },
+      { name: "booked_Date", label: "Booked Date" },
+      { name: "booked_Time", label: "Booked Time" },
+      { name: "passport_number", label: "Passport Number" },
+      { name: "flight_Destination_from", label: "Flight Destination From" },
+      { name: "flight_Destination_to", label: "Flight Destination To" },
+      { name: "depature_date", label: "Departure Date" },
+      { name: "depature_time", label: "Departure Time" },
+      { name: "arrival_date", label: "Arrival Date" },
+      { name: "arrival_time", label: "Arrival Time" },
+    ];
+
+    const emptyFields = requiredFields.filter(
+      ({ name }) => actualData[name] === ""
+    );
+
+    if (emptyFields.length > 0) {
+      setEmptyFields(emptyFields.map(({ name }) => name));
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = data.get("email");
+    if (!emailRegex.test(email)) {
+      setServerError("Invalid email format");
+      return;
+    }
+
+    const mobileNumber = data.get("mobile_number");
+    if (mobileNumber) {
+      if (mobileNumber.length !== 10) {
+        setServerError("Mobile number must be 10 digits long");
+        return;
+      }
+    }
     actualData.booked_Date = new Date(actualData.booked_Date)
       .toISOString()
       .split("T")[0];
@@ -89,11 +136,12 @@ function PassengersRegistration() {
       if (res.error.status === 401) {
         setUnauthorized(true);
       }
-      setServerError(res.error);
+      setServerError(res.error.data.detail);
     }
 
     if (res.data) {
       resetformFields();
+      setSuccessMessage(res.data.msg);
       storeToken(res.data.token);
     }
   };
@@ -112,6 +160,16 @@ function PassengersRegistration() {
       <div className="text-3xl flex justify-center font-bold">
         Passengers Details
       </div>
+      {server_error && (
+        <div className="flex items-center mb-4">
+          <Alert severity="error">{server_error}</Alert>
+        </div>
+      )}
+      {successMessage && (
+        <div className="flex items-center mb-2">
+          <Alert severity="success">{successMessage}</Alert>
+        </div>
+      )}
       <div className="mt-6 ">
         <form ref={formRef} onSubmit={handlePassengerRegister}>
           <div className="grid w-auto grid-cols-3 gap-4 laptop:px-32 desktop:px-40  tablet:px-24">
@@ -122,15 +180,22 @@ function PassengersRegistration() {
               >
                 First name
               </label>
-
               <input
                 type="text"
                 name="first_name"
                 id="first-name"
                 placeholder="First Name"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("first_name")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("first_name") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -165,8 +230,16 @@ function PassengersRegistration() {
                 id="last-name"
                 placeholder="Last Name"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("last_name")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("last_name") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -183,8 +256,16 @@ function PassengersRegistration() {
                 id="email"
                 placeholder="Email"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("email")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 w-[36rem]text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("email") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -206,7 +287,7 @@ function PassengersRegistration() {
             </div>
           </div>
 
-          <div className="mt-10 text-1xl flex justify-center font-bold">
+          <div className="mt-4 text-1xl flex justify-center font-bold">
             Flight Details
           </div>
 
@@ -225,8 +306,16 @@ function PassengersRegistration() {
                 id="flight-number"
                 placeholder="Flight Number"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("flight_number")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("flight_number") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -243,8 +332,16 @@ function PassengersRegistration() {
                 id="plane-number"
                 placeholder="Plane Number"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("plane_number")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("plane_number") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -261,8 +358,16 @@ function PassengersRegistration() {
                 id="date"
                 placeholder="Date"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("booked_Date")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("booked_Date") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -279,8 +384,16 @@ function PassengersRegistration() {
                 id="time"
                 placeholder="Time"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("booked_Time")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("booked_Time") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -297,8 +410,16 @@ function PassengersRegistration() {
                 id="passport-number"
                 placeholder="Passport Number"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("passport_number")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("passport_number") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
           </div>
 
@@ -315,8 +436,16 @@ function PassengersRegistration() {
                 id="from-destination"
                 placeholder="From"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("flight_Destination_from")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("flight_Destination_from") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
             <div className="pr-2 py-1.5">To</div>
             <div className="pr-2">
@@ -326,8 +455,16 @@ function PassengersRegistration() {
                 id="to-destination"
                 placeholder="To"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("flight_Destination_to")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("flight_Destination_to") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
           </div>
 
@@ -342,8 +479,16 @@ function PassengersRegistration() {
                     id="date"
                     placeholder="Date"
                     autoComplete="given-name"
+                    style={{
+                      border: emptyFields.includes("depature_date")
+                        ? "2px solid red"
+                        : "1px solid #D1D5DB",
+                    }}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  {emptyFields.includes("depature_date") && (
+                    <p className="text-red-500">This field is required</p>
+                  )}
                 </div>
                 <div className="pr-2">
                   <input
@@ -352,8 +497,16 @@ function PassengersRegistration() {
                     id="time"
                     placeholder="Time"
                     autoComplete="given-name"
+                    style={{
+                      border: emptyFields.includes("depature_time")
+                        ? "2px solid red"
+                        : "1px solid #D1D5DB",
+                    }}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  {emptyFields.includes("depature_time") && (
+                    <p className="text-red-500">This field is required</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -368,8 +521,16 @@ function PassengersRegistration() {
                     id="date"
                     placeholder="Date"
                     autoComplete="given-name"
+                    style={{
+                      border: emptyFields.includes("arrival_date")
+                        ? "2px solid red"
+                        : "1px solid #D1D5DB",
+                    }}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  {emptyFields.includes("arrival_date") && (
+                    <p className="text-red-500">This field is required</p>
+                  )}
                 </div>
                 <div className="pr-2">
                   <input
@@ -378,8 +539,16 @@ function PassengersRegistration() {
                     id="time"
                     placeholder="Time"
                     autoComplete="given-name"
+                    style={{
+                      border: emptyFields.includes("arrival_time")
+                        ? "2px solid red"
+                        : "1px solid #D1D5DB",
+                    }}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  {emptyFields.includes("arrival_time") && (
+                    <p className="text-red-500">This field is required</p>
+                  )}
                 </div>
               </div>
             </div>
