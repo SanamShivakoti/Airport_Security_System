@@ -210,7 +210,7 @@ class UpdateUserProfileView(APIView):
         serializer = UpdateUserProfileSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg': 'User updated successfully'}, status=status.HTTP_200_OK)
+            return Response({'msg': 'Profile updated successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -322,7 +322,7 @@ class PassengerRegistrationView(APIView):
                     'created_at': timezone.now()
                 }
                 activity = Activity.objects.create(**activity_data)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                return Response({'msg' : 'Registration Successful'}, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
@@ -456,7 +456,7 @@ class StaffRegistrationView(APIView):
                     'created_at': timezone.now()
                 }
             activity = Activity.objects.create(**activity_data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'msg': 'Registration Successful'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -807,8 +807,8 @@ class UpdateNotificationCheckedAPIView(APIView):
 
 class AdminActivitiesView(APIView):
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
-    # @role_required(['Admin'])
+    permission_classes = [IsAuthenticated]
+    @role_required(['Admin'])
     def get(self, request):
         notifications = Activity.objects.filter(Q(role='Admin') | Q(role='None'))
         admin_notification_serializer = AdminActivitiesSerializer(notifications, many=True)
@@ -818,9 +818,40 @@ class AdminActivitiesView(APIView):
 
 class UserActivitiesView(APIView):
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
-    # @role_required(['Admin'])
+    permission_classes = [IsAuthenticated]
+    @role_required(['Admin','User'])
     def get(self, request):
         notifications = Activity.objects.filter(role='None')
         admin_notification_serializer = UserActivitiesSerializer(notifications, many=True)
         return Response(admin_notification_serializer.data)
+
+
+# Delete staff from Raspberry pi view
+class DeleteStaffRaspberrypiView(APIView):
+    renderer_classes = [UserRenderer]
+    permission_classes = [IsAuthenticated]
+
+    @role_required(['Admin'])
+    def delete(self, request, staff_id):
+       
+        try:
+            staff = get_object_or_404(Staff, staff_id=staff_id)
+            staff = get_object_or_404(Staff, staff_id=staff_id)
+            face_id = staff.face_id
+            
+
+            raspberry_pi_url = 'http://192.168.25.25:8000/delete/staff/' + str(face_id) + '/'
+            response = requests.delete(raspberry_pi_url)
+            if response.status_code != 200:
+                return Response({'error': 'Failed to delete staff on Raspberry Pi'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            activity_data = {
+                    'activity_description': f"This Staff {staff.staff_id} was deleted",
+                    'role': 'Admin',  
+                    'created_at': timezone.now()
+                }
+            activity = Activity.objects.create(**activity_data)
+            staff.delete()
+            return Response({'msg': 'staff deleted successfully'}, status=status.HTTP_200_OK)
+        except Staff.DoesNotExist:
+            return Response({'error': 'staff not found'}, status=status.HTTP_404_NOT_FOUND)
