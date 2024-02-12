@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import {
   useGetStaffsQuery,
   useDeleteStaffMutation,
+  useDeleteStaffRaspberryMutation,
 } from "../../../services/userAuthApi";
 import { getToken, removeToken } from "../../../services/LocalStorageService";
 import { removeUserToken } from "../../../features/authSlice";
@@ -52,6 +53,7 @@ function ViewStaffs() {
   }, [users, userIdSearch]);
 
   const [handleDelete, res] = useDeleteStaffMutation();
+  const [handleDeleteRaspberry, result] = useDeleteStaffRaspberryMutation();
   if (error) {
     if (error.status === 401) {
       dispatch(removeUserToken());
@@ -78,16 +80,30 @@ function ViewStaffs() {
     } catch (error) {}
   };
 
+  const deleteStaffRaspberry = async (staff_id, access_token) => {
+    try {
+      const response = await handleDeleteRaspberry({ staff_id, access_token });
+
+      if (response.data) {
+        setFetch(true);
+      }
+
+      if (response.error.status === 401) {
+        setUnauthorized(true);
+      }
+    } catch (error) {}
+  };
+
   const handleEditStaff = async (staff_id) => {
     navigate(`Edit/${staff_id}`);
   };
 
-  if (isLoading || res.isLoading) {
+  if (isLoading || res.isLoading || result.isLoading) {
     return <div>Loading...</div>;
   }
 
   if (error) {
-    return <div>Error loading users: {error}</div>;
+    return <div>Error loading passengers: {error}</div>;
   }
 
   return (
@@ -130,6 +146,7 @@ function ViewStaffs() {
                 <th className="px-1 py-2 text-center bg-gray-300">Email</th>
                 <th className="px-1 py-2 text-center bg-gray-300">Edit</th>
                 <th className="px-1 py-2 text-center bg-gray-300">Delete</th>
+                <th className="px-1 py-2 text-center bg-gray-300">Delete from Raspberry Pi</th>
               </tr>
             </thead>
             <tbody>
@@ -159,6 +176,17 @@ function ViewStaffs() {
                       className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
                       onClick={() => {
                         deleteStaff(user.staff_id, access_token);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                  <td className="border px-1 py-1">
+                    <button
+                      type="submit"
+                      className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+                      onClick={() => {
+                        deleteStaffRaspberry(user.staff_id, access_token);
                       }}
                     >
                       Delete
