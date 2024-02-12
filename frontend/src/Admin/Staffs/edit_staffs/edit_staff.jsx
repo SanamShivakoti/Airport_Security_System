@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { Alert, Typography } from "@mui/material";
 import {
   useFilterStaffsQuery,
   useUpdateStaffMutation,
@@ -15,12 +16,14 @@ import { useNavigate } from "react-router-dom";
 function EditStaffs() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [server_error, setServerError] = useState({});
+  const [server_error, setServerError] = useState("");
   const formRef = useRef();
   const { access_token } = getToken();
   const { staff_id } = useParams();
   const [updateStaff, { error: updateError, data: updateData, refetch }] =
     useUpdateStaffMutation();
+  const [emptyFields, setEmptyFields] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
   const {
     data,
     refetch: updateRefetch,
@@ -56,6 +59,15 @@ function EditStaffs() {
       window.onbeforeunload = null;
     };
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   const [faceUrl, setFaceUrl] = useState("");
 
   const [userData, setUserData] = useState({
@@ -91,6 +103,8 @@ function EditStaffs() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setEmptyFields([]);
+    setServerError("");
     const data = new FormData(formRef.current);
     const actualData = {
       first_name: data.get("first_name"),
@@ -103,6 +117,33 @@ function EditStaffs() {
       staff_id,
     };
 
+    // Check if any required fields are empty
+    const requiredFields = ["first_name", "last_name", "email", "address"];
+
+    const emptyFields = requiredFields.filter(
+      (fieldName) => !userData[fieldName]
+    );
+
+    if (emptyFields.length > 0) {
+      setEmptyFields(emptyFields);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = data.get("email");
+    if (!emailRegex.test(email)) {
+      setServerError("Invalid email format");
+      return;
+    }
+
+    const mobileNumber = data.get("mobile_number");
+    if (mobileNumber) {
+      if (mobileNumber.length !== 10) {
+        setServerError("Mobile number must be 10 digits long");
+        return;
+      }
+    }
+
     try {
       updateStaff({ staff_id, actualData, access_token })
         .then((response) => {
@@ -112,6 +153,10 @@ function EditStaffs() {
               removeToken();
               return navigate("/");
             }
+          }
+
+          if (response.data) {
+            setSuccessMessage(response.data.msg);
           }
         })
         .catch((error) => {});
@@ -130,7 +175,16 @@ function EditStaffs() {
   return (
     <div>
       <div className="text-3xl font-bold text-center">Staffs Details</div>
-
+      {server_error && (
+        <div className="flex items-center mb-4">
+          <Alert severity="error">{server_error}</Alert>
+        </div>
+      )}
+      {successMessage && (
+        <div className="flex items-center mb-2">
+          <Alert severity="success">{successMessage}</Alert>
+        </div>
+      )}
       <div className="mt-8 ">
         <div className="grid w-auto grid-cols-2 gap-4 laptop:px-40 desktop:px-52  tablet:px-32">
           <form ref={formRef} onSubmit={handleSubmit}>
@@ -153,8 +207,16 @@ function EditStaffs() {
                   onChange={(e) =>
                     setUserData({ ...userData, first_name: e.target.value })
                   }
+                  style={{
+                    border: emptyFields.includes("first_name")
+                      ? "2px solid red"
+                      : "1px solid #D1D5DB",
+                  }}
                   className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {emptyFields.includes("first_name") && (
+                  <p className="text-red-500">This field is required</p>
+                )}
               </div>
 
               <div className="mt-4">
@@ -197,8 +259,16 @@ function EditStaffs() {
                   onChange={(e) =>
                     setUserData({ ...userData, last_name: e.target.value })
                   }
+                  style={{
+                    border: emptyFields.includes("last_name")
+                      ? "2px solid red"
+                      : "1px solid #D1D5DB",
+                  }}
                   className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {emptyFields.includes("last_name") && (
+                  <p className="text-red-500">This field is required</p>
+                )}
               </div>
 
               <div className="mt-4">
@@ -219,8 +289,16 @@ function EditStaffs() {
                   onChange={(e) =>
                     setUserData({ ...userData, email: e.target.value })
                   }
+                  style={{
+                    border: emptyFields.includes("email")
+                      ? "2px solid red"
+                      : "1px solid #D1D5DB",
+                  }}
                   className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {emptyFields.includes("email") && (
+                  <p className="text-red-500">This field is required</p>
+                )}
               </div>
 
               <div className="mt-4">
@@ -297,13 +375,13 @@ function EditStaffs() {
           {/* To display photo */}
           <div className="relative ">
             <div className="absolute top-0 right-0">
+              <label
+                htmlFor="photo"
+                className="block ml-1 text-sm text-center font-medium leading-6 text-gray-900"
+              >
+                Face Photo
+              </label>
               <div className=" mt-4 px-4 bg-white w-60 h-60 mx-auto p-4 border-4 border-gray-300 rounded-md cursor-not-allowed">
-                <label
-                  htmlFor="photo"
-                  className="block ml-1 text-sm text-center font-medium leading-6 text-gray-900"
-                >
-                  Photo
-                </label>
                 <img
                   src={faceUrl}
                   alt="Captured face"

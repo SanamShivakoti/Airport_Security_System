@@ -11,6 +11,7 @@ import {
 } from "../../services/LocalStorageService";
 import { useDispatch } from "react-redux";
 import { removeUserToken } from "../../features/authSlice";
+import { Alert } from "@mui/material";
 function UserRegistration() {
   const dispatch = useDispatch();
   const [server_error, setServerError] = useState({});
@@ -19,6 +20,9 @@ function UserRegistration() {
   const { access_token } = getToken();
   const navigate = useNavigate();
   const [unauthorized, setUnauthorized] = useState(false);
+  const [emptyFields, setEmptyFields] = useState([]);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const confirmationMessage = "Are you sure you want to leave this page?";
@@ -36,11 +40,21 @@ function UserRegistration() {
     };
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   const resetformFields = () => {
     formRef.current.reset();
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setEmptyFields([]);
+    setError("");
     const data = new FormData(formRef.current);
     const actualData = {
       first_name: data.get("first_name"),
@@ -54,17 +68,58 @@ function UserRegistration() {
       status: data.get("status"),
     };
 
+    // Check if any required fields are empty
+    const requiredFields = [
+      { name: "first_name", label: "First Name" },
+      { name: "last_name", label: "Last Name" },
+      { name: "email", label: "Email" },
+      { name: "password", label: "password" },
+      { name: "password2", label: "password2" },
+    ];
+
+    const emptyFields = requiredFields.filter(
+      ({ name }) => actualData[name] === ""
+    );
+
+    if (emptyFields.length > 0) {
+      setEmptyFields(emptyFields.map(({ name }) => name));
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = data.get("email");
+    if (!emailRegex.test(email)) {
+      setError("Invalid email format");
+      return;
+    }
+
+    // Check if passwords match
+    if (actualData.password !== actualData.password2) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    // Check mobile number length
+    const mobileNumber = data.get("mobile_number");
+    if (mobileNumber) {
+      if (mobileNumber.length !== 10) {
+        setError("Mobile number must be 10 digits long");
+        return;
+      }
+    }
+
     const res = await registerUser({ actualData, access_token });
 
     if (res.error) {
       if (res.error.status === 401) {
         setUnauthorized(true);
       }
-      setServerError(res.error.data.errors);
+      setError(res.error.data.detail);
     }
 
     if (res.data) {
       resetformFields();
+      setSuccessMessage(res.data.msg);
       storeToken(res.data.token);
     }
   };
@@ -82,6 +137,16 @@ function UserRegistration() {
       <div className="text-3xl flex justify-center font-bold">
         Users Details
       </div>
+      {error && (
+        <div className="flex items-center mb-2">
+          <Alert severity="error">{error}</Alert>
+        </div>
+      )}
+      {successMessage && (
+        <div className="flex items-center mb-2">
+          <Alert severity="success">{successMessage}</Alert>
+        </div>
+      )}
       <div className="mt-8 ">
         <form ref={formRef} onSubmit={handleSubmit}>
           <div className="grid w-auto grid-cols-2 gap-4 laptop:px-40 desktop:px-52  tablet:px-32">
@@ -99,8 +164,16 @@ function UserRegistration() {
                 id="first-name"
                 placeholder="First Name"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("first_name")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("first_name") && (
+                <p className="text-red-500">This field is required</p>
+              )}
               {/* {server_error.name ? (
                 <Typography
                   style={{ fontSize: 12, color: "red", paddingLeft: 10 }}
@@ -144,8 +217,16 @@ function UserRegistration() {
                 id="last-name"
                 placeholder="Last Name"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("last_name")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("last_name") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -162,8 +243,16 @@ function UserRegistration() {
                 id="email"
                 placeholder="Email"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("email")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("email") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -198,8 +287,16 @@ function UserRegistration() {
                 id="password"
                 placeholder="Password"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("password")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("password") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-4">
@@ -216,8 +313,16 @@ function UserRegistration() {
                 id="confirm_password"
                 placeholder="Confirm password"
                 autoComplete="given-name"
+                style={{
+                  border: emptyFields.includes("password2")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("password2") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-4">

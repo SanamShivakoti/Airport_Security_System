@@ -8,11 +8,11 @@ import { getToken, removeToken } from "../../../services/LocalStorageService";
 import { removeUserToken } from "../../../features/authSlice";
 import { useNavigate } from "react-router-dom";
 import { useAdminProfileViewQuery } from "../../../services/userAuthApi";
-
+import { Alert } from "@mui/material";
 function ViewUsers() {
   const [userIdSearch, setUserIdSearch] = useState("");
   const [serverError, setServerError] = useState({});
-  const [successMessage, setSuccessMessage] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
   const { access_token } = getToken();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -48,6 +48,14 @@ function ViewUsers() {
     }
   }, [unauthorized]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   const filteredUsers = useMemo(() => {
     return users.filter(
       (user) =>
@@ -74,6 +82,10 @@ function ViewUsers() {
   const deleteUser = async (user_id, access_token) => {
     try {
       const response = await handleDelete({ user_id, access_token });
+      if (response.data) {
+        setFetch(true);
+        setSuccessMessage(res.data.msg);
+      }
       // window.location.reload();
       if (response.error) {
         if (response.error.status === 401) {
@@ -99,6 +111,12 @@ function ViewUsers() {
       <div className="text-3xl flex justify-center font-bold pt-2">
         View Users
       </div>
+
+      {successMessage && (
+        <div className="flex items-center mb-2">
+          <Alert severity="success">{successMessage}</Alert>
+        </div>
+      )}
       <div className="pl-64 pr-2">
         <div className="mb-4 mt-10">
           {/* Search input */}

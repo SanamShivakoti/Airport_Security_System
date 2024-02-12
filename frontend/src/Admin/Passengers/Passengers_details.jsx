@@ -17,6 +17,7 @@ function PassengersRegistration() {
   const { access_token } = getToken();
   const [emptyFields, setEmptyFields] = useState([]);
   const [unauthorized, setUnauthorized] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     const confirmationMessage = "Are you sure you want to leave this page?";
@@ -34,6 +35,14 @@ function PassengersRegistration() {
     };
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   const formatToLocalISO = (date, time) => {
     const localDateTime = new Date(`${date} ${time}`);
     return localDateTime.toISOString();
@@ -42,8 +51,9 @@ function PassengersRegistration() {
     formRef.current.reset();
   };
   const handlePassengerRegister = async (e) => {
-    setServerError("");
     e.preventDefault();
+    setEmptyFields([]);
+    setServerError("");
     const data = new FormData(formRef.current);
     const actualData = {
       first_name: data.get("first_name"),
@@ -90,6 +100,22 @@ function PassengersRegistration() {
       setEmptyFields(emptyFields.map(({ name }) => name));
       return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = data.get("email");
+    if (!emailRegex.test(email)) {
+      setServerError("Invalid email format");
+      return;
+    }
+
+    const mobileNumber = data.get("mobile_number");
+    if (mobileNumber) {
+      if (mobileNumber.length !== 10) {
+        setServerError("Mobile number must be 10 digits long");
+        return;
+      }
+    }
+
     actualData.booked_Date = new Date(actualData.booked_Date)
       .toISOString()
       .split("T")[0];
@@ -127,6 +153,7 @@ function PassengersRegistration() {
     if (res.data) {
       setEmptyFields([]);
       resetformFields();
+      setSuccessMessage(res.data.msg);
       storeToken(res.data.token);
     }
   };
@@ -148,6 +175,11 @@ function PassengersRegistration() {
       {server_error && (
         <div className="flex items-center mb-4">
           <Alert severity="error">{server_error}</Alert>
+        </div>
+      )}
+      {successMessage && (
+        <div className="flex items-center mb-2">
+          <Alert severity="success">{successMessage}</Alert>
         </div>
       )}
       <div className="mt-6">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { Typography } from "@mui/material";
+import { Alert, CircularProgress, Typography } from "@mui/material";
 import {
   useUpdatePassengerMutation,
   useFilterPassengersQuery,
@@ -16,12 +16,14 @@ import { useNavigate } from "react-router-dom";
 function EditPassengers() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [server_error, setServerError] = useState({});
+  const [server_error, setServerError] = useState("");
   const formRef = useRef();
   const [updatePassenger] = useUpdatePassengerMutation();
   const { access_token } = getToken();
   const { passenger_id } = useParams();
   const [unauthorized, setUnauthorized] = useState(false);
+  const [emptyFields, setEmptyFields] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
   useEffect(() => {
     const confirmationMessage = "Are you sure you want to leave this page?";
 
@@ -37,6 +39,14 @@ function EditPassengers() {
       window.onbeforeunload = null;
     };
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage]);
 
   const formatToLocalTime = (dateTime) => {
     const time = new Date(dateTime).toLocaleTimeString("en-US", {
@@ -112,6 +122,8 @@ function EditPassengers() {
 
   const handlePassengerEdit = async (e) => {
     e.preventDefault();
+    setEmptyFields([]);
+    setServerError("");
     const data = new FormData(formRef.current);
     const actualData = {
       first_name: data.get("first_name"),
@@ -131,6 +143,48 @@ function EditPassengers() {
       arrival_date: data.get("arrival_date"),
       arrival_time: data.get("arrival_time"),
     };
+
+    // Check if any required fields are empty
+    const requiredFields = [
+      "first_name",
+      "last_name",
+      "email",
+      "flight_number",
+      "plane_number",
+      "booked_Date",
+      "booked_Time",
+      "passport_number",
+      "flight_Destination_from",
+      "flight_Destination_to",
+      "depature_date",
+      "depature_time",
+      "arrival_date",
+      "arrival_time",
+    ];
+
+    const emptyFields = requiredFields.filter(
+      (fieldName) => !userData[fieldName]
+    );
+
+    if (emptyFields.length > 0) {
+      setEmptyFields(emptyFields);
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = data.get("email");
+    if (!emailRegex.test(email)) {
+      setServerError("Invalid email format");
+      return;
+    }
+
+    const mobileNumber = data.get("mobile_number");
+    if (mobileNumber) {
+      if (mobileNumber.length !== 10) {
+        setServerError("Mobile number must be 10 digits long");
+        return;
+      }
+    }
     actualData.booked_Date = new Date(actualData.booked_Date)
       .toISOString()
       .split("T")[0];
@@ -168,6 +222,7 @@ function EditPassengers() {
     }
 
     if (res.data) {
+      setSuccessMessage(res.data.msg);
       storeToken(res.data.token);
     }
   };
@@ -184,7 +239,16 @@ function EditPassengers() {
       <div className="text-3xl flex justify-center font-bold">
         Passengers Details
       </div>
-
+      {server_error && (
+        <div className="flex items-center mb-4">
+          <Alert severity="error">{server_error}</Alert>
+        </div>
+      )}
+      {successMessage && (
+        <div className="flex items-center mb-2">
+          <Alert severity="success">{successMessage}</Alert>
+        </div>
+      )}
       {/* form to update the passengers and also delete passengers*/}
       <div className="mt-6 ">
         <form ref={formRef} onSubmit={handlePassengerEdit}>
@@ -207,8 +271,16 @@ function EditPassengers() {
                 onChange={(e) =>
                   setUserData({ ...userData, first_name: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("first_name")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("first_name") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -251,8 +323,16 @@ function EditPassengers() {
                 onChange={(e) =>
                   setUserData({ ...userData, last_name: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("last_name")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("last_name") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -273,8 +353,16 @@ function EditPassengers() {
                 onChange={(e) =>
                   setUserData({ ...userData, email: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("email")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 w-[36rem]text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("email") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -323,8 +411,16 @@ function EditPassengers() {
                 onChange={(e) =>
                   setUserData({ ...userData, flight_number: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("flight_number")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full m-0 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("flight_number") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -345,8 +441,16 @@ function EditPassengers() {
                 onChange={(e) =>
                   setUserData({ ...userData, plane_number: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("plane_number")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("plane_number") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -367,8 +471,16 @@ function EditPassengers() {
                 onChange={(e) =>
                   setUserData({ ...userData, booked_Date: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("booked_Date")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("booked_Date") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -389,8 +501,16 @@ function EditPassengers() {
                 onChange={(e) =>
                   setUserData({ ...userData, booked_Time: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("booked_Time")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("booked_Time") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
 
             <div className="mt-1">
@@ -411,8 +531,16 @@ function EditPassengers() {
                 onChange={(e) =>
                   setUserData({ ...userData, passport_number: e.target.value })
                 }
+                style={{
+                  border: emptyFields.includes("passport_number")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("passport_number") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
           </div>
 
@@ -436,8 +564,16 @@ function EditPassengers() {
                     flight_Destination_from: e.target.value,
                   })
                 }
+                style={{
+                  border: emptyFields.includes("flight_Destination_from")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("flight_Destination_from") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
             <div className="pr-2 py-1.5">To</div>
             <div className="pr-2">
@@ -454,8 +590,16 @@ function EditPassengers() {
                     flight_Destination_to: e.target.value,
                   })
                 }
+                style={{
+                  border: emptyFields.includes("flight_Destination_to")
+                    ? "2px solid red"
+                    : "1px solid #D1D5DB",
+                }}
                 className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+              {emptyFields.includes("flight_Destination_to") && (
+                <p className="text-red-500">This field is required</p>
+              )}
             </div>
           </div>
 
@@ -477,8 +621,16 @@ function EditPassengers() {
                         depature_date: e.target.value,
                       })
                     }
+                    style={{
+                      border: emptyFields.includes("depature_date")
+                        ? "2px solid red"
+                        : "1px solid #D1D5DB",
+                    }}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  {emptyFields.includes("depature_date") && (
+                    <p className="text-red-500">This field is required</p>
+                  )}
                 </div>
                 <div className="pr-2">
                   <input
@@ -494,8 +646,16 @@ function EditPassengers() {
                         depature_time: e.target.value,
                       })
                     }
+                    style={{
+                      border: emptyFields.includes("depature_time")
+                        ? "2px solid red"
+                        : "1px solid #D1D5DB",
+                    }}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  {emptyFields.includes("depature_time") && (
+                    <p className="text-red-500">This field is required</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -514,8 +674,16 @@ function EditPassengers() {
                     onChange={(e) =>
                       setUserData({ ...userData, arrival_date: e.target.value })
                     }
+                    style={{
+                      border: emptyFields.includes("arrival_date")
+                        ? "2px solid red"
+                        : "1px solid #D1D5DB",
+                    }}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  {emptyFields.includes("arrival_date") && (
+                    <p className="text-red-500">This field is required</p>
+                  )}
                 </div>
                 <div className="pr-2">
                   <input
@@ -528,8 +696,16 @@ function EditPassengers() {
                     onChange={(e) =>
                       setUserData({ ...userData, arrival_time: e.target.value })
                     }
+                    style={{
+                      border: emptyFields.includes("arrival_time")
+                        ? "2px solid red"
+                        : "1px solid #D1D5DB",
+                    }}
                     className="block  my-px w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   />
+                  {emptyFields.includes("arrival_time") && (
+                    <p className="text-red-500">This field is required</p>
+                  )}
                 </div>
               </div>
             </div>
