@@ -250,6 +250,18 @@ export const userAuthApi = createApi({
         };
       },
     }),
+    DeleteStaffRaspberry: builder.mutation({
+      query: ({ staff_id, access_token }) => {
+        return {
+          url: `delete/staffs/raspberry/${staff_id}/`,
+          method: "DELETE",
+          headers: {
+            authorization: `Bearer ${access_token}`,
+            "Content-type": "application/json",
+          },
+        };
+      },
+    }),
     filterStaffs: builder.query({
       query: ({ staff_id, access_token }) => {
         return {
@@ -361,4 +373,5 @@ export const {
   useGetUserNotificationsQuery,
   useGetAdminActivitiesQuery,
   useGetUserActivitiesQuery,
+  useDeleteStaffRaspberryMutation,
 } = userAuthApi;
