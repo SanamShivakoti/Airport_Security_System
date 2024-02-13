@@ -81,7 +81,7 @@ class LoginUserView(APIView):
         if user is not None:
             token = get_tokens_for_user(user)
             
-            return Response({'token':token, 'role':user.role, 'msg':'Login Success'}, status=status.HTTP_200_OK)
+            return Response({'token':token, 'role':user.role, 'status':user.status, 'msg':'Login Success'}, status=status.HTTP_200_OK)
         else:
             return Response({'errors':{'non_field_errors':['Email or Password is not valid']}}, status=status.HTTP_404_NOT_FOUND)
 
@@ -173,9 +173,9 @@ class OTPVerifiedPasswordResetView(APIView):
 
                     return Response({'msg':'Password changed successfully'}, status=status.HTTP_200_OK) 
                 else:
-                    return Response({'error': 'Password changed Unsuccessful'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'detail': 'Password changed Unsuccessful'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            return Response({'error':'!! Sorry, something went wrong !!'})
+            return Response({'detail':'!! Sorry, something went wrong !!'})
 
 
 
@@ -201,11 +201,15 @@ class UpdateUserProfileView(APIView):
         try:
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         
         # if 'password' in request.data:
         
         #     request.data['password'] = make_password(request.data['password'])
+
+        new_email = request.data.get('email')
+        if new_email and User.objects.filter(email=new_email) and new_email != user.email:
+                return Response({'detail': 'Email is already in use by another user'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = UpdateUserProfileSerializer(user, data=request.data)
         if serializer.is_valid():
@@ -222,11 +226,19 @@ class UpdateUserView(APIView):
         try:
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         
         # if 'password' in request.data:
         
         #     request.data['password'] = make_password(request.data['password'])
+
+        role = request.data.get('role') 
+        if role == 'Admin' and User.objects.filter(role='Admin'):
+                return Response({'detail': 'An Admin already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        new_email = request.data.get('email')
+        if new_email and User.objects.filter(email=new_email) and new_email != user.email:
+                return Response({'detail': 'Email is already in use by another user'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = UpdateUserSerializer(user, data=request.data)
         if serializer.is_valid():
@@ -253,7 +265,7 @@ class FilterUserView(APIView):
             serializer = FilterUserSerializer(user, many=False)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         
 
 class DeleteUserView(APIView):
@@ -275,7 +287,7 @@ class DeleteUserView(APIView):
 
             return Response({'msg': 'User deleted successfully'}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         
 
 class AdminChangePasswordView(APIView):
@@ -387,7 +399,7 @@ class DeletePassengerView(APIView):
             passenger.delete()
             return Response({'msg': 'Passenger deleted successfully'}, status=status.HTTP_200_OK)
         except Passenger.DoesNotExist:
-            return Response({'error': 'Passenger not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Passenger not found'}, status=status.HTTP_404_NOT_FOUND)
         
 
 
@@ -401,7 +413,15 @@ class UpdatePassengerView(APIView):
         try:
             passenger = Passenger.objects.get(passenger_id=passenger_id)
         except Passenger.DoesNotExist:
-            return Response({'error': 'Passenger not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Passenger not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        new_passport_number = request.data.get('passport_number') 
+        if new_passport_number and Passenger.objects.filter(passport_number=new_passport_number) and new_passport_number != passenger.passport_number:
+                return Response({'detail': 'Passenger with this passport number already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        new_email = request.data.get('email')
+        if new_email and Passenger.objects.filter(email=new_email) and new_email != passenger.email:
+                return Response({'detail': 'Email is already in use by another Passenger'}, status=status.HTTP_400_BAD_REQUEST)
         
 
         serializer = UpdatePassengerSerializer(passenger, data=request.data)
@@ -500,12 +520,12 @@ class DeleteStaffView(APIView):
             staff.delete()
             return Response({'msg': 'staff deleted successfully'}, status=status.HTTP_200_OK)
         except Staff.DoesNotExist:
-            return Response({'error': 'staff not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'staff not found'}, status=status.HTTP_404_NOT_FOUND)
         
 
 
 
-# filter Passenger view
+# filter Staff view
 class FilterStaffView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
@@ -519,7 +539,7 @@ class FilterStaffView(APIView):
             serializer = FilterStaffSerializer(staff, many=False)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Passenger.DoesNotExist:
-            return Response({'error': 'Staff not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Staff not found'}, status=status.HTTP_404_NOT_FOUND)
         
 
 
@@ -535,7 +555,11 @@ class UpdateStaffView(APIView):
         try:
             staff = Staff.objects.get(staff_id=staff_id)
         except Staff.DoesNotExist:
-            return Response({'error': 'Staff not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Staff not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        new_email = request.data.get('email')
+        if new_email and Staff.objects.filter(email=new_email) and new_email != staff.email:
+                return Response({'detail': 'Email is already in use by another Staff'}, status=status.HTTP_400_BAD_REQUEST)
         
 
         serializer = UpdateStaffSerializer(staff, data=request.data)
@@ -551,7 +575,7 @@ class UpdateStaffView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-# Display the passenger flight details 
+# Display the staff details 
 class StaffDetailView(generics.RetrieveAPIView):
     serializer_class = StaffDetailsSerializer
 
