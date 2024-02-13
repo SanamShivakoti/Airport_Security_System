@@ -583,3 +583,38 @@ class FaceDetectionConsumer(AsyncJsonWebsocketConsumer):
 
 
 
+class DeleteFIleConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def receive(self, text_data=None, bytes_data=None, **kwargs):
+        try:
+            # Decode the JSON-encoded message
+            data = json.loads(text_data)
+
+            # Extract the parameters from the decoded message
+            face_id = data.get("face_id")
+            message_type = data.get("type")
+
+            if message_type == "delete_staff":
+                # Call a function to delete the file
+                await self.delete_face_file(face_id)
+        except Exception as e:
+            pass
+
+    async def delete_face_file(self, face_id):
+        try:
+            # Define the path to the face file based on the face_id
+            file_path = os.path.join(os.path.abspath("./face_dataset/"), F"{face_id}.npy")
+
+            # Check if the file exists
+            if os.path.exists(file_path):
+                # Delete the file
+                os.remove(file_path)
+
+                await self.send_json({"message": "staff deleted successfully"})
+            else:
+                await self.send_json({"error": f"Face file with ID {face_id} not found"})
+        except Exception as e:
+            await self.send_json({"error": str(e)})
+

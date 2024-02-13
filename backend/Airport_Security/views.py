@@ -864,11 +864,6 @@ class DeleteStaffRaspberrypiView(APIView):
             face_id = staff.face_id
             
 
-            raspberry_pi_url = 'http://192.168.25.25:8000/delete/staff/' + str(face_id) + '/'
-            response = requests.delete(raspberry_pi_url)
-            if response.status_code != 200:
-                return Response({'error': 'Failed to delete staff on Raspberry Pi'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
             activity_data = {
                     'activity_description': f"This Staff {staff.staff_id} was deleted",
                     'role': 'Admin',  
@@ -876,6 +871,6 @@ class DeleteStaffRaspberrypiView(APIView):
                 }
             activity = Activity.objects.create(**activity_data)
             staff.delete()
-            return Response({'msg': 'staff deleted successfully'}, status=status.HTTP_200_OK)
+            return Response({'msg': 'staff deleted successfully', 'face_id': face_id}, status=status.HTTP_200_OK)
         except Staff.DoesNotExist:
             return Response({'error': 'staff not found'}, status=status.HTTP_404_NOT_FOUND)
