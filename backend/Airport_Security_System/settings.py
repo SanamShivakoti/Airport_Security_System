@@ -77,7 +77,7 @@ TEMPLATES = [
 ]
 
 ASGI_APPLICATION = 'Airport_Security_System.asgi.application'
-# WSGI_APPLICATION = 'Airport_Security_System.wsgi.application'
+WSGI_APPLICATION = 'Airport_Security_System.wsgi.application'
 
 
 # Database
@@ -97,7 +97,7 @@ DATABASES = {
            'NAME': 'airport-security-system',
            'ENFORCE_SCHEMA': False,
            'CLIENT': {
-               'host' : 'mongodb+srv://sanam:ubuntu123@airportsecuritycluster.izyrew6.mongodb.net/'
+               'host' : os.environ.get('DATABASE_URL')
             }
        }
    }
@@ -186,8 +186,8 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    os.environ.get('FRONT_BASE_URL'),
+    
 ]
 
 ALLOWED_HOSTS = ['*']
