@@ -16,7 +16,7 @@ django.setup()
 from django.urls import path
 from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
-from Airport_Security.consumers import PracticeConsumer, CameraTest, FaceDetectionConsumer
+from Airport_Security.consumers import PracticeConsumer, CameraTest, FaceDetectionConsumer, DeleteFIleConsumer
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
@@ -24,5 +24,6 @@ application = ProtocolTypeRouter({
             path('practice', PracticeConsumer.as_asgi()),
             path('camera/open', CameraTest.as_asgi()),
             path('face/detection', FaceDetectionConsumer.as_asgi()),
+            path('delete/face/file', DeleteFIleConsumer.as_asgi()),
         ])
 })
