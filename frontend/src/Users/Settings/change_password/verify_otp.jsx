@@ -77,6 +77,12 @@ function PasswordResetPage() {
     setOtp("");
     setErrorMessage("");
     setSuccessMessage("");
+
+    if (otp === "") {
+      setErrorMessage("Please enter OTP");
+      setLoading(false);
+      return;
+    }
     const response = await verifyOTP({ access_token, otp });
 
     if (response.error && response.error.status === 400) {
@@ -111,11 +117,32 @@ function PasswordResetPage() {
     setLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
+
+    if (newPassword === "" || confirmPassword === "") {
+      setErrorMessage("Please enter both new password and confirm password");
+      setLoading(false);
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setErrorMessage("Password and Confirm Password don't match");
       setLoading(false);
       return;
     }
+
+    // Define password pattern
+    const passwordPattern =
+      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[a-zA-Z]).{8,}$/;
+
+    // Check if the new password matches the pattern
+    if (!passwordPattern.test(newPassword)) {
+      setErrorMessage(
+        "Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one number, and one special character"
+      );
+      setLoading(false);
+      return;
+    }
+
     const response = await resetPassword({
       access_token,
       actualData: { password: newPassword, password2: confirmPassword },
@@ -225,7 +252,7 @@ function PasswordResetPage() {
             </Typography>
           )}
           {successMessage && (
-            <Typography variant="subtitle1" style={{ color: "gray" }}>
+            <Typography variant="subtitle1" style={{ color: "green" }}>
               {successMessage}
             </Typography>
           )}

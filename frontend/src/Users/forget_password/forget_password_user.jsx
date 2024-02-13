@@ -117,6 +117,20 @@ const UserPasswordResetPage = () => {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
+
+    // Define password pattern
+    const passwordPattern =
+      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[a-zA-Z]).{8,}$/;
+
+    // Check if the new password matches the pattern
+    if (!passwordPattern.test(newPassword)) {
+      setError(
+        "Password must contain at least 8 characters, including one uppercase letter, one lowercase letter, one number, and one special character"
+      );
+
+      return;
+    }
+
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match. Please enter matching passwords.");
       return;

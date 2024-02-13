@@ -153,6 +153,7 @@ function EditStaffs() {
               removeToken();
               return navigate("/");
             }
+            setServerError(response.error.data.detail);
           }
 
           if (response.data) {

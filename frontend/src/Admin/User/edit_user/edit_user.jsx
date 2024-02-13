@@ -142,7 +142,7 @@ function EditUser() {
       if (res.error.status === 401) {
         setUnauthorized(true);
       }
-      setServerError(res.error.data);
+      setServerError(res.error.data.detail);
     }
 
     if (res.data) {

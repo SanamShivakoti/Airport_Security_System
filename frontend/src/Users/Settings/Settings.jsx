@@ -30,6 +30,15 @@ function Settings() {
   const { data, refetch, isLoading, error } = useAdminProfileViewQuery({
     access_token,
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   useEffect(() => {
     if (error) {
       if (error.status === 401) {
@@ -129,7 +138,7 @@ function Settings() {
       if (res.error.status === 401) {
         setUnauthorized(true);
       }
-      setServerError(res.error.data.errors);
+      setServerError(res.error.data.detail);
     }
 
     if (res.data) {

@@ -42,18 +42,25 @@ export const Login = () => {
 
     if (res.data) {
       const role = res.data.role;
+      const status = res.data.status;
 
       if (role === "Admin") {
-        storeToken(res.data.token);
-        let { access_token } = getToken();
-        dispatch(
-          setUserToken({
-            access_token: access_token,
-            isAuthenticated: true,
-            UserRole: role,
-          })
-        );
-        navigate("/Admin/dashboard");
+        if (status === "active") {
+          storeToken(res.data.token);
+          let { access_token } = getToken();
+          dispatch(
+            setUserToken({
+              access_token: access_token,
+              isAuthenticated: true,
+              UserRole: role,
+            })
+          );
+          navigate("/Admin/dashboard");
+        } else {
+          setServerError({
+            non_field_errors: ["!! Permission denied !!. You are not active"],
+          });
+        }
       } else {
         setServerError({
           non_field_errors: ["!! Permission denied !!. You are not a Admin"],

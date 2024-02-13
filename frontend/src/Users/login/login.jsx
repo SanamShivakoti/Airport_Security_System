@@ -44,16 +44,22 @@ export const UserLogin = () => {
       const status = res.data.status;
 
       if (role === "User") {
-        storeToken(res.data.token);
-        let { access_token } = getToken();
-        dispatch(
-          setUserToken({
-            access_token: access_token,
-            isAuthenticated: true,
-            UserRole: role,
-          })
-        );
-        navigate("/User/dashboard");
+        if (status === "active") {
+          storeToken(res.data.token);
+          let { access_token } = getToken();
+          dispatch(
+            setUserToken({
+              access_token: access_token,
+              isAuthenticated: true,
+              UserRole: role,
+            })
+          );
+          navigate("/User/dashboard");
+        } else {
+          setServerError({
+            non_field_errors: ["!! Permission denied !!. You are not active"],
+          });
+        }
       } else {
         setServerError({
           non_field_errors: ["!! Permission denied !!. You are not a User"],

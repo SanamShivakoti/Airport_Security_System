@@ -218,7 +218,7 @@ function EditPassengers() {
       if (res.error.status === 401) {
         setUnauthorized(true);
       }
-      setServerError(res.error);
+      setServerError(res.error.data.detail);
     }
 
     if (res.data) {

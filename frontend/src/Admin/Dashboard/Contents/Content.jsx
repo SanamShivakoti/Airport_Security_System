@@ -32,7 +32,7 @@ function Content() {
     access_token,
   });
 
-  const totalUsers = users.length;
+  const totalUsers = users.length - 1;
   const totalStaffs = staffs.length;
 
   useEffect(() => {
