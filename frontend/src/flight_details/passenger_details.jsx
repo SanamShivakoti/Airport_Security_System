@@ -84,7 +84,7 @@ const PassengerDetails = () => {
   const fetchData = async () => {
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/admin/passenger/${encodeURIComponent(
+        `${process.env.REACT_APP_API_URL}passenger/${encodeURIComponent(
           passportNumber
         )}/`,
         {
@@ -229,7 +229,7 @@ const PassengerDetails = () => {
     try {
       // Make an API call to send a notification
       const notificationRes = await fetch(
-        "http://127.0.0.1:8000/api/admin/notification/send/",
+        `${process.env.REACT_APP_API_URL}notification/send/`,
         {
           method: "POST",
           headers: {

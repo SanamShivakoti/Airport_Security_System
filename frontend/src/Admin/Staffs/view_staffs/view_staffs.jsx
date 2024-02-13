@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 import {
   useGetStaffsQuery,
@@ -15,7 +15,7 @@ function ViewStaffs() {
   const dispatch = useDispatch();
   const [unauthorized, setUnauthorized] = useState(false);
   const [fetch, setFetch] = useState(false);
-
+  const ws = useRef(null);
   const {
     data: users = [],
     error,
@@ -85,6 +85,21 @@ function ViewStaffs() {
       const response = await handleDeleteRaspberry({ staff_id, access_token });
 
       if (response.data) {
+        const face_id = response.data.face_id;
+
+        // Establish WebSocket connection
+        // const socket = new WebSocket("ws://192.168.25.25:8000/delete/face/file");
+        const socket = new WebSocket("ws://127.0.0.1:8000/delete/face/file");
+        // Handle WebSocket events
+        socket.onopen = () => {
+          // Send the face_id and type via WebSocket
+          socket.send(JSON.stringify({ face_id, type: "delete_staff" }));
+        };
+
+        socket.onmessage = (event) => {};
+        socket.onerror = (error) => {};
+
+        socket.onclose = () => {};
         setFetch(true);
       }
 
@@ -146,7 +161,9 @@ function ViewStaffs() {
                 <th className="px-1 py-2 text-center bg-gray-300">Email</th>
                 <th className="px-1 py-2 text-center bg-gray-300">Edit</th>
                 <th className="px-1 py-2 text-center bg-gray-300">Delete</th>
-                <th className="px-1 py-2 text-center bg-gray-300">Delete from Raspberry Pi</th>
+                <th className="px-1 py-2 text-center bg-gray-300">
+                  Delete from Raspberry Pi
+                </th>
               </tr>
             </thead>
             <tbody>

@@ -95,7 +95,10 @@ function UserProfile() {
         <div onClick={handleImageClick}>
           <div className="w-32 h-32 rounded-full  overflow-hidden">
             {userData.avatar ? (
-              <img src={`http://localhost:8000${userData.avatar}`} alt="" />
+              <img
+                src={`${process.env.REACT_APP_IMAGE_URL}${userData.avatar}`}
+                alt=""
+              />
             ) : (
               <img src={img} alt="" />
             )}

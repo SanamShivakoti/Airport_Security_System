@@ -83,7 +83,7 @@ function Settings() {
         mobile_number: data.mobile_number || "",
         avatar: data.avatar || "",
       });
-      setProfileImageUrl(`http://localhost:8000${data.avatar}`);
+      setProfileImageUrl(`${process.env.REACT_APP_IMAGE_URL}${data.avatar}`);
     }
   }, [data]);
 

@@ -37,7 +37,7 @@ function Usersidebar() {
           {image ? (
             <img
               id="profile-image"
-              src={`http://localhost:8000${image}`}
+              src={`${process.env.REACT_APP_IMAGE_URL}${image}`}
               alt=""
             />
           ) : (
