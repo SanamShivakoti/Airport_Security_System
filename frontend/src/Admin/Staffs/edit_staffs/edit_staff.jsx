@@ -97,7 +97,7 @@ function EditStaffs() {
         face_id: data.face_id,
         faces: data.faces,
       }));
-      setFaceUrl(`http://localhost:8000${data.faces}`);
+      setFaceUrl(`${process.env.REACT_APP_IMAGE_URL}${data.faces}`);
     }
   }, [data]);
 

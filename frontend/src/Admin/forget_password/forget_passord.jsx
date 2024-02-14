@@ -36,7 +36,7 @@ const PasswordResetPage = () => {
     try {
       setError(""); // Reset error state
       const response = await fetch(
-        "http://127.0.0.1:8000/api/admin/send_otp_email/forget/password/",
+        `${process.env.REACT_APP_API_URL}/api/admin/send_otp_email/forget/password/`,
         {
           method: "POST",
           headers: {
