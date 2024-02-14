@@ -77,7 +77,7 @@ const PasswordResetPage = () => {
       setSuccessMessage("");
       setOtp("");
       const response = await fetch(
-        "http://127.0.0.1:8000/api/admin/otp_verification/forget/password/",
+        `${process.env.REACT_APP_API_URL}/api/admin/otp_verification/forget/password/`,
         {
           method: "POST",
           headers: {
@@ -139,7 +139,7 @@ const PasswordResetPage = () => {
       setError(""); // Reset error state
       setSuccessMessage("");
       const response = await fetch(
-        `http://127.0.0.1:8000/api/admin/change_password/forget/password/${user_id}/`,
+        `${process.env.REACT_APP_API_URL}/api/admin/change_password/forget/password/${user_id}/`,
         {
           method: "PUT",
           headers: {
