@@ -35,6 +35,14 @@ function PassengersRegistration() {
     };
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   const formatToLocalISO = (date, time) => {
     const localDateTime = new Date(`${date} ${time}`);
     return localDateTime.toISOString();
