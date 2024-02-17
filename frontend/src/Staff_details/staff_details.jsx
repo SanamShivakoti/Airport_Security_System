@@ -17,8 +17,8 @@ const StaffDetails = () => {
 
   const ws = useRef(null);
   useEffect(() => {
-    ws.current = new WebSocket("ws://127.0.0.1:8000/face/detection");
-    // ws.current = new WebSocket("ws://192.168.25.25:8000/face/detection");
+    // ws.current = new WebSocket("ws://127.0.0.1:8000/face/detection");
+    ws.current = new WebSocket("ws://192.168.25.25:8000/face/detection");
 
     ws.current.onopen = () => {};
 
@@ -59,7 +59,9 @@ const StaffDetails = () => {
   const fetchData = async () => {
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}staff/${encodeURIComponent(faceId)}/`,
+        `${process.env.REACT_APP_API_URL}/api/admin/staff/${encodeURIComponent(
+          faceId
+        )}/`,
         {
           method: "GET",
         }
@@ -79,6 +81,7 @@ const StaffDetails = () => {
         }, 1 * 60 * 1000);
       } else {
         const result = await res.json();
+        console.log("Result", result);
         setError(null);
         setFirstName(result.first_name);
         setMiddleName(result.middle_name);
@@ -115,7 +118,7 @@ const StaffDetails = () => {
     formData.append("imageData", unkownFace);
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}send_unknown_face/`,
+        `${process.env.REACT_APP_API_URL}/api/admin/send_unknown_face/`,
         {
           method: "POST",
           body: formData,

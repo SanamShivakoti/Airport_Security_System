@@ -144,8 +144,8 @@ function StaffsRegistration() {
     }
   }, [unauthorized]);
   useEffect(() => {
-    ws.current = new WebSocket("ws://127.0.0.1:8000/camera/open");
-    // ws.current = new WebSocket("ws://192.168.25.25:8000/camera/open");
+    // ws.current = new WebSocket("ws://127.0.0.1:8000/camera/open");
+    ws.current = new WebSocket("ws://192.168.25.25:8000/camera/open");
 
     ws.current.onopen = () => {};
 

@@ -12,6 +12,7 @@ import Content from "../Contents";
 import { sidebar_data } from "./sidebar_data";
 import { getToken } from "../../../services/LocalStorageService";
 import { useAdminProfileViewQuery } from "../../../services/userAuthApi";
+import UserTermsAndConditions from "../../terms_conditions/terms_condtion";
 // import Avatar from "react-avatar";
 import img from "./user.png";
 function Usersidebar() {
@@ -90,6 +91,9 @@ function Usersidebar() {
         <Route path="/Settings/change/password" element={<OtpVerification />} />
 
         <Route path="/profile/view" element={<UserProfile />} />
+
+                {/*for User terms and conditions View*/}
+                <Route path="/terms/view" element={<UserTermsAndConditions />} />
       </Routes>
     </div>
   );

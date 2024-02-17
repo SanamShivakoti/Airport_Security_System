@@ -88,8 +88,8 @@ function ViewStaffs() {
         const face_id = response.data.face_id;
 
         // Establish WebSocket connection
-        // const socket = new WebSocket("ws://192.168.25.25:8000/delete/face/file");
-        const socket = new WebSocket("ws://127.0.0.1:8000/delete/face/file");
+        const socket = new WebSocket("ws://192.168.25.25:8000/delete/face/file");
+        // const socket = new WebSocket("ws://127.0.0.1:8000/delete/face/file");
         // Handle WebSocket events
         socket.onopen = () => {
           // Send the face_id and type via WebSocket

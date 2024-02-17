@@ -17,6 +17,7 @@ import { getToken } from "../../../services/LocalStorageService";
 import "./sidebar.css";
 import Content from "../Contents";
 import { SidebarData } from "./Sidebardata";
+import TermsAndConditions from "../../Terms_conditions/termsAndconditions";
 
 // import Avatar from "react-avatar";
 import React from "react";
@@ -116,6 +117,9 @@ function Sidebar() {
         <Route path="User/View/details/Edit/:user_id" element={<EditUser />} />
         {/*for Admin Profile View*/}
         <Route path="/profile/view" element={<Profile />} />
+
+        {/*for Admin terms and conditions View*/}
+        <Route path="/terms/view" element={<TermsAndConditions />} />
       </Routes>
     </div>
   );

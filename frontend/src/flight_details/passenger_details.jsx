@@ -46,8 +46,8 @@ const PassengerDetails = () => {
   const ws = useRef(null);
 
   useEffect(() => {
-    // ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
-    ws.current = new WebSocket("ws://127.0.0.1:8000/practice");
+    ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
+    // ws.current = new WebSocket("ws://127.0.0.1:8000/practice");
 
     ws.current.onopen = () => {};
 
@@ -84,9 +84,9 @@ const PassengerDetails = () => {
   const fetchData = async () => {
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}passenger/${encodeURIComponent(
-          passportNumber
-        )}/`,
+        `${
+          process.env.REACT_APP_API_URL
+        }/api/admin/passenger/${encodeURIComponent(passportNumber)}/`,
         {
           method: "GET",
         }
@@ -229,7 +229,7 @@ const PassengerDetails = () => {
     try {
       // Make an API call to send a notification
       const notificationRes = await fetch(
-        `${process.env.REACT_APP_API_URL}notification/send/`,
+        `${process.env.REACT_APP_API_URL}/api/admin/notification/send/`,
         {
           method: "POST",
           headers: {
@@ -243,7 +243,6 @@ const PassengerDetails = () => {
           }),
         }
       );
-
       if (notificationRes.ok) {
       } else {
         const notificationError = await notificationRes.json();
