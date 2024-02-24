@@ -143,36 +143,36 @@ function StaffsRegistration() {
       return navigate("/");
     }
   }, [unauthorized]);
-  useEffect(() => {
-    // ws.current = new WebSocket(`${process.env.REACT_APP_WEB_URL}/camera/open`);
-    // ws.current = new WebSocket("ws://192.168.25.25:8000/camera/open");
+  // useEffect(() => {
+  //   // ws.current = new WebSocket(`${process.env.REACT_APP_WEB_URL}/camera/open`);
+  //   // ws.current = new WebSocket("ws://192.168.25.25:8000/camera/open");
 
-    ws.current.onopen = () => {};
+  //   ws.current.onopen = () => {};
 
-    ws.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.error) {
-        setError(data.error);
-      } else {
-        const base64Image = data.image;
-        const faceID = data.face_id;
+  //   ws.current.onmessage = (event) => {
+  //     const data = JSON.parse(event.data);
+  //     if (data.error) {
+  //       setError(data.error);
+  //     } else {
+  //       const base64Image = data.image;
+  //       const faceID = data.face_id;
 
-        // Convert the base64 image to a Data URL
-        const dataUrl = `data:image/jpeg;base64,${base64Image}`;
+  //       // Convert the base64 image to a Data URL
+  //       const dataUrl = `data:image/jpeg;base64,${base64Image}`;
 
-        // Set the image URL in the state
-        setImageUrl(dataUrl);
-        setFaceID(faceID);
-      }
-    };
+  //       // Set the image URL in the state
+  //       setImageUrl(dataUrl);
+  //       setFaceID(faceID);
+  //     }
+  //   };
 
-    ws.current.onclose = () => {};
+  //   ws.current.onclose = () => {};
 
-    return () => {
-      // Clean up the WebSocket connection when the component is unmounted
-      ws.current.close();
-    };
-  }, []);
+  //   return () => {
+  //     // Clean up the WebSocket connection when the component is unmounted
+  //     ws.current.close();
+  //   };
+  // }, []);
 
   const handleOpenCamera = async () => {
     sendMessage("capture_image");
