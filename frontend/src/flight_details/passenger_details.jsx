@@ -46,8 +46,8 @@ const PassengerDetails = () => {
   const ws = useRef(null);
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
-    // ws.current = new WebSocket("ws://127.0.0.1:8000/practice");
+    ws.current = new WebSocket(`${process.env.REACT_APP_WEB_URL}/practice`);
+    // ws.current = new WebSocket("ws://192.168.25.25:8000/practice");
 
     ws.current.onopen = () => {};
 
@@ -142,10 +142,10 @@ const PassengerDetails = () => {
         // Check if departure date is today
         const today = new Date();
 
-        if (departureDateTime.toDateString() < today.toDateString()) {
+        if (departureDateTime < today) {
           // Departure date has already passed
           setDialogMessage(
-            "Your flight date has already been passed. Please contact the concerned authority for reschedule."
+            "Your flight has already been passed. Please contact the concerned authority for reschedule."
           );
           setShowDialog(true);
 

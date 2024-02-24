@@ -144,8 +144,8 @@ function StaffsRegistration() {
     }
   }, [unauthorized]);
   useEffect(() => {
-    // ws.current = new WebSocket("ws://127.0.0.1:8000/camera/open");
-    ws.current = new WebSocket("ws://192.168.25.25:8000/camera/open");
+    ws.current = new WebSocket(`${process.env.REACT_APP_WEB_URL}/camera/open`);
+    // ws.current = new WebSocket("ws://192.168.25.25:8000/camera/open");
 
     ws.current.onopen = () => {};
 
@@ -355,11 +355,11 @@ function StaffsRegistration() {
                   autoComplete="department-name"
                   className="block  my-px px-2 w-full bg-white h-9 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 >
-                  <option>Department-1</option>
-                  <option>Department-2</option>
-                  <option>Department-3</option>
-                  <option>Department-4</option>
-                  <option>Department-5</option>
+                  <option>Finance</option>
+                  <option>Management</option>
+                  <option>Engineer</option>
+                  <option>Communication</option>
+                  <option>Security</option>
                 </select>
               </div>
             </div>

@@ -17,8 +17,10 @@ const StaffDetails = () => {
 
   const ws = useRef(null);
   useEffect(() => {
-    // ws.current = new WebSocket("ws://127.0.0.1:8000/face/detection");
-    ws.current = new WebSocket("ws://192.168.25.25:8000/face/detection");
+    ws.current = new WebSocket(
+      `${process.env.REACT_APP_WEB_URL}/face/detection`
+    );
+    // ws.current = new WebSocket("ws://192.168.25.25:8000/face/detection");
 
     ws.current.onopen = () => {};
 
